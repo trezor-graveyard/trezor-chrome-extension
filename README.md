@@ -32,11 +32,11 @@ npm run build
 Caveats
 -------
 
-On Mac OS X, Windows and Chrome OS, extension should work without any root priviledges. Unfortunately, on Linux, you have to put this file
+On Mac OS X, Windows and Chrome OS, isntalling extension should work without any root privileges. Unfortunately, on Linux, you have to put this file
 
 https://raw.githubusercontent.com/trezor/trezor-common/master/udev/51-trezor-udev.rules
 
-into  `/lib/udev/rules.d`, as a root.
+into  `/lib/udev/rules.d`, as a root. Extension then however doesn't run with root privileges (naturally)
 
 
 License
