@@ -1,0 +1,25 @@
+{
+  "name": "TREZOR extension",
+  "description": "Chrome extension for communication with Bitcoin TREZOR",
+  "version": "0.1",
+
+  "manifest_version": 2,
+  "minimum_chrome_version": "38.0.2125.7",
+
+  "app": {
+    "background": {
+      "scripts": ["index.js"]
+    }
+  },
+  "externally_connectable": {
+    "matches": ["*://*.mytrezor.com/*"]
+  },
+  "permissions": [
+    "hid",
+    {
+      "usbDevices": [
+        { "vendorId": 21324, "productId": 1 }
+       ]
+    }
+  ]
+}

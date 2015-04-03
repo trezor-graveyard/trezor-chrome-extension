@@ -1,0 +1,40 @@
+{
+  "name": "trezor-chrome-extension",
+  "version": "0.0.1",
+  "description": "Chrome extension for communication with Trezor",
+  "main": "index.js",
+  "keywords": [
+    "chrome",
+    "trezor",
+    "bitcoin"
+  ],
+  "contributors": [
+    {
+      "name": "William Wolf",
+      "mail": "throughnothing@gmail.com"
+    },
+    {
+      "name": "Karel Bílek",
+      "mail": "kb@karelbilek.com"
+    }
+  ],
+  "license": "Public domain",
+  "homepage": "https://github.com/throughnothing/chrome-trezor",
+  "dependencies": {
+    "protobufjs": "~3.8.2",
+    "promise": "~5.0.0",
+    "bitcoinjs-lib": "~1.5.6",
+    "bigi": "^1.4.0",
+    "ecurve": "^1.0.0",
+    "lodash": "~3.6.0"
+  },
+  "devDependencies": {
+    "browserify": "~3.32.0",
+    "watchify": "~3.1.0"
+  },
+  "scripts": {
+    "prepare": "sed -i 's/\\(google\\/protobuf\\)/\\.\\/\\1/' trezor-common/protob/config.proto && proto2js trezor-common/protob/config.proto -commonjs > config_proto_compiled.js",
+    "build": "browserify lib/index.js -d -o extension/index.js",
+    "watch": "watchify lib/index.js -d -v -o extension/index.js"
+  }
+}
