@@ -1,6 +1,6 @@
 {
   "name": "trezor-chrome-extension",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Chrome extension for communication with Trezor",
   "main": "index.js",
   "keywords": [
@@ -10,6 +10,11 @@
   ],
   "contributors": [
     {
+      "name": "Mike Tsao",
+      "mail": "mike@sowbug.com"
+    },
+
+    {
       "name": "William Wolf",
       "mail": "throughnothing@gmail.com"
     },
@@ -18,8 +23,8 @@
       "mail": "kb@karelbilek.com"
     }
   ],
-  "license": "Public domain",
-  "homepage": "https://github.com/throughnothing/chrome-trezor",
+  "license": "GPLv3",
+  "homepage": "https://github.com/trezor/chrome-extension",
   "dependencies": {
     "protobufjs": "~3.8.2",
     "promise": "~5.0.0",

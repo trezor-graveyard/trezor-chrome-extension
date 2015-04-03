@@ -5,6 +5,11 @@
 
   "manifest_version": 2,
   "minimum_chrome_version": "38.0.2125.7",
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
 
   "app": {
     "background": {
@@ -15,11 +20,11 @@
     "matches": ["*://*.mytrezor.com/*"]
   },
   "permissions": [
-    "hid",
-    {
-      "usbDevices": [
-        { "vendorId": 21324, "productId": 1 }
-       ]
+    "hid", {
+      "usbDevices": [{
+        "vendorId": 21324,
+        "productId": 1
+      }]
     }
   ]
 }
