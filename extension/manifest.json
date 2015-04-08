@@ -1,5 +1,5 @@
 {
-  "name": "TREZOR extension",
+  "name": "TREZOR Chrome extension",
   "description": "Chrome extension for communication with Bitcoin TREZOR",
   "version": "0.1",
 
