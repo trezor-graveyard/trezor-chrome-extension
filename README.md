@@ -32,11 +32,13 @@ npm run build
 Caveats
 -------
 
-On Mac OS X, Windows and Chrome OS, isntalling extension should work without any root privileges. Unfortunately, on Linux, you have to put this file
+On Mac OS X, Windows and Chrome OS, installing the extension should work without any root privileges. Unfortunately, on Linux, you have to run the following command:
 
-https://raw.githubusercontent.com/trezor/trezor-common/master/udev/51-trezor-udev.rules
+```
+sudo wget https://raw.githubusercontent.com/trezor/trezor-common/master/udev/23-trezor.rules -O /usr/lib/udev/rules.d/23-trezor.rules
+```
 
-into  `/lib/udev/rules.d`, as a root. Extension then however doesn't run with root privileges (naturally)
+in order to install an USB rule for udev. Extension however does not need the root privileges.
 
 
 License
