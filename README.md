@@ -46,4 +46,4 @@ License
 
 GPLv3
 
-(C) 2015 SatoshiLabs, with some code from [sowbug/trhid](https://github.com/sowbug/trhid) and [throughnothing/chrome-trezor](throughnothing/chrome-trezor)
+(C) 2015 SatoshiLabs, with some code from [sowbug/trhid](https://github.com/sowbug/trhid) and [throughnothing/chrome-trezor](https://github.com/throughnothing/chrome-trezor)
