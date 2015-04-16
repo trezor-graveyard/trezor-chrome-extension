@@ -38,7 +38,7 @@
     "watchify": "~3.1.0"
   },
   "scripts": {
-    "prepare": "sed 's/\\(google\\/protobuf\\)/\\.\\/\\1/' trezor-common/protob/config.proto > trezor-common/protob/config_i.proto && proto2js trezor-common/protob/config_i.proto -commonjs > config_proto_compiled.js",
+    "prepare": "./compile_protobuf.sh",
     "build": "browserify lib/index.js -d -o extension/index.js",
     "zip": "zip -r extension extension",
     "watch": "watchify lib/index.js -d -v -o extension/index.js"
