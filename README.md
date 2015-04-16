@@ -1,7 +1,7 @@
 TREZOR Chrome extension
 ===
 
-Chrome extension for TREZOR - an alternative to [trezord](https://github.com/trezor/trezord) and TREZOR NPAPI plug-in.
+Chrome extension for [Bitcoin TREZOR](https://www.bitcointrezor.com/) by [SatoshiLabs](http://satoshilabs.com/) - an alternative to [trezord](https://github.com/trezor/trezord) and TREZOR NPAPI plug-in.
 
 It works at a very low level, only resending messages from and to TREZOR device; it contains no logic about device state etc.
 
