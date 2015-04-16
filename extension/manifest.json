@@ -17,7 +17,17 @@
     }
   },
   "externally_connectable": {
-    "matches": ["*://*.mytrezor.com/*"]
+    "matches": [
+      "*://localhost/*",
+      "*://localhost.mytrezor.com/*",
+      "https://mytrezor.com/*",
+      "https://*.mytrezor.com/*",
+      "https://trezor.github.io/*",
+      "https://greenaddress.it/*",
+      "https://*.greenaddress.it/*",
+      "https://coinprism.com/*",
+      "https://*.coinprism.com/*"
+    ]
   },
   "permissions": [
     "hid", {
