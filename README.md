@@ -35,7 +35,7 @@ Caveats
 On Mac OS X, Windows and Chrome OS, installing the extension should work without any root privileges. Unfortunately, on Linux, you have to run the following command:
 
 ```
-sudo wget https://raw.githubusercontent.com/trezor/trezor-common/master/udev/23-trezor.rules -O /usr/lib/udev/rules.d/23-trezor.rules
+sudo wget https://raw.githubusercontent.com/trezor/trezor-common/master/udev/23-trezor.rules -O /usr/lib/udev/rules.d/23-trezor.rules && sudo cp /usr/lib/udev/rules.d/23-trezor.rules /lib/udev/rules.d/23-trezor.rules 
 ```
 
 in order to install an USB rule for udev. Extension however does not need the root privileges.
