@@ -1,7 +1,7 @@
 {
   "name": "TREZOR Chrome extension",
   "description": "Chrome extension for communication with Bitcoin TREZOR",
-  "version": "0.1",
+  "version": "0.1.1",
 
   "manifest_version": 2,
   "minimum_chrome_version": "38.0.2125.7",
@@ -26,7 +26,10 @@
       "https://greenaddress.it/*",
       "https://*.greenaddress.it/*",
       "https://coinprism.com/*",
-      "https://*.coinprism.com/*"
+      "https://*.coinprism.com/*",
+      "https://bitex.la/*", 
+      "https://*.bitex.la/*"
+
     ]
   },
   "permissions": [
