@@ -1,0 +1,5 @@
+*.swp
+config_proto_compiled.js
+extension.zip
+extension/index.js
+node_modules/
