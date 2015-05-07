@@ -1,7 +1,7 @@
 {
   "name": "TREZOR Chrome extension",
   "description": "Chrome extension for communication with Bitcoin TREZOR",
-  "version": "0.1.3",
+  "version": "0.1.7",
 
   "manifest_version": 2,
   "minimum_chrome_version": "38.0.2125.7",
@@ -39,7 +39,8 @@
         "productId": 1
       }]
     },
-    "storage"
+    "storage",
+    "browser"
   ],
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlBLI7C8hybngCmlKgfLytKQiqrTQYHQpz6E0DcWYeqC047J5hFtxbODYsPIn9sCJePv/LCW9jOc3G3B/aUGK1Lks+DrbnNlDgI/Ja4MzYEEaYyLFquHJlQe7B2doMTLS9JQfkWsXe/IQW8vfYq5Jo4JmiucXUbr37Xlsl0U/ScwSz0hDnzHQfpCpuLuUQP6kQrqbJ8Rd3NDlh5qAB0BfewDoDmlgGBlV+za80I8KYRSwgAvfEndevcsXQzV6myKptdqpffEbGhjwZ63ehofbnlr4c5i25OkMirI5bfcmP+6g/wYt4zOBnCep8MK8eG92NvocSBsu530XDywuCiY+2QIDAQAB"
 }

@@ -36,11 +36,5 @@
   "devDependencies": {
     "browserify": "~3.32.0",
     "watchify": "~3.1.0"
-  },
-  "scripts": {
-    "prepare": "./compile_protobuf.sh",
-    "build": "browserify lib/index.js -d -o extension/index.js",
-    "zip": "zip -r extension extension",
-    "watch": "watchify lib/index.js -d -v -o extension/index.js"
   }
 }

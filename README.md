@@ -23,9 +23,8 @@ Building
 --------
 
 ```
-npm install
-npm run prepare
-npm run build
+make npm-install
+make zip
 ```
 
 
