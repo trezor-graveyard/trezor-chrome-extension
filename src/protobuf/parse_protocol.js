@@ -30,7 +30,7 @@ var _ = require('lodash');
 
 var protocolToJSON = require('./to_json.js');
 
-var compiledConfigProto = require('../../config_proto_compiled.js'); 
+var compiledConfigProto = require('../config_proto_compiled.js'); 
 
 
 /**

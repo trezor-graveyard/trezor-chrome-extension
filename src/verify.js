@@ -40,7 +40,7 @@ var curve = ecurve.getCurveByName('secp256k1')
 
 var Promise = require('promise');
 
-var keys = require('../constants.js').SATOSHI_KEYS
+var keys = require('./constants.js').SATOSHI_KEYS
   .map(function (key) {
     return new Buffer(key, 'binary');
   });

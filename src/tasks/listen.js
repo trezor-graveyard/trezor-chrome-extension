@@ -21,7 +21,7 @@
 
 'use strict';
 var enumerate = require('./enumerate');
-var constants = require('../../constants.js');
+var constants = require('../constants.js');
 var Promise = require('promise');
 
 var iterMax = constants.LISTEN_ITERS;

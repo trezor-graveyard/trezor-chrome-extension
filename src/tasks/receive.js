@@ -29,7 +29,7 @@
 
 var Promise = require('promise');
 var hid = require('../chrome/hid');
-var constants = require('../../constants.js');
+var constants = require('../constants.js');
 var MessageDecoder = require('../protobuf/message_decoder.js');
 var ByteBuffer = require('protobufjs').ByteBuffer;
 

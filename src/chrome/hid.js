@@ -22,7 +22,7 @@
 
 'use strict';
 
-var constants = require('../../constants.js');
+var constants = require('../constants.js');
 
 
 /**
