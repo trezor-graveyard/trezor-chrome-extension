@@ -27,7 +27,6 @@
   "homepage": "https://github.com/trezor/chrome-extension",
   "dependencies": {
     "protobufjs": "~3.8.2",
-    "promise": "~5.0.0",
     "bitcoinjs-lib": "~1.5.6",
     "bigi": "^1.4.0",
     "ecurve": "^1.0.0",
