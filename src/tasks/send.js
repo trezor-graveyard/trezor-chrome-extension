@@ -31,7 +31,7 @@
 import * as hid from "../chrome/hid";
 import * as constants from "../constants.js";
 import * as ProtoBuf from "protobufjs";
-var ByteBuffer = ProtoBuf.ByteBufer;
+import {ByteBuffer} from "protobufjs";
 import type {Messages} from "../protobuf/messages.js";
 
 

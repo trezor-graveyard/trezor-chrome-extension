@@ -17,10 +17,12 @@ cd chrome-extension
 git submodule update --init
 ```
 
-
+The source codde is using [flow](http://flowtype.org) type annotations and some features of ECMAScript 6.
 
 Building
 --------
+
+You need to have [flow](http://flowtype.org) installed for the type checking; if you don't want to or can't install Flow, you will need to remove the `flow-check` goal from the Makefile. 
 
 ```
 make npm-install

@@ -61,7 +61,10 @@ var responseFunctions = {
 }
 
 function handleMessage(request: Object, sender: ChromeMessageSender, sendResponse: (response: Object) => void): boolean {
-  console.log("Message arrived: ", request);
+
+  if (process.env.NODE_ENV === "debug") {
+    console.log("Message arrived: ", request);
+  }
 
   var responseFunction = tasks.none;
 
@@ -78,15 +81,20 @@ function handleMessage(request: Object, sender: ChromeMessageSender, sendRespons
   }
 
   nonThrowingResponse(request.body).then(function (responseBody) {
+  
+    if (process.env.NODE_ENV === "debug") {
+      console.log("Response sent: ", responseBody);
+    }
 
-    console.log("Response sent: ", responseBody);
     sendResponse({
       type: "response",
       body: responseBody
     });
 
   }).catch(function (error) {
-    console.log("Error sent: ", error);
+    if (process.env.NODE_ENV === "debug") {
+      console.log("Error sent: ", error);
+    }
 
     sendResponse({
       type: "error",

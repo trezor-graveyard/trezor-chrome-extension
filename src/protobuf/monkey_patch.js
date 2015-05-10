@@ -23,7 +23,7 @@
 'use strict';
 
 import * as ProtoBuf from "protobufjs";
-var ByteBuffer = ProtoBuf.ByteBuffer;
+import {ByteBuffer} from "protobufjs";
 
 // monkey-patching ProtoBuf,
 // so that bytes are loaded correctly from hexadecimal
@@ -33,13 +33,24 @@ export function patch(): void {
   ProtoBuf.Reflect.Message.Field.prototype.verifyValue = function (value, skipRepeated) {
     var newValue = value;
     if (this.type === ProtoBuf.TYPES["bytes"]) {
-      console.log("Maybe converting from ", value);
+
+      if (process.env.NODE_ENV === "debug") {
+        console.log("Maybe converting from ", value);
+      }
 
       if (value != null) {
         if (typeof value === "string") {
-          console.log("Converting from ", value);
+
+          if (process.env.NODE_ENV === "debug") {
+            console.log("Converting from ", value);
+          }
+
           newValue = ByteBuffer.wrap(value, "hex");
-          console.log("Converted to ", newValue);
+
+          if (process.env.NODE_ENV === "debug") {
+            console.log("Converted to ", newValue);
+          }
+
         }
       }
     }

@@ -28,8 +28,7 @@
  */
 
 import * as ProtoBuf from "protobufjs";
-var ByteBuffer = ProtoBuf.ByteBuffer;
-var Long = ProtoBuf.Long;
+import {ByteBuffer, Long} from "protobufjs";
 import * as _ from "lodash";
 
 import {Messages} from "./messages.js";
