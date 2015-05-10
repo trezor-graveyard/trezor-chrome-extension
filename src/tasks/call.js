@@ -1,3 +1,4 @@
+/* @flow */
 /**
  * This file is part of the TREZOR project.
  *
@@ -20,11 +21,14 @@
  */
 
 'use strict';
-var send = require('./send');
-var receive = require('./receive');
-var udevStatus = require('./udevStatus');
-var storage = require('../chrome/storage');
+import {send} from "./send";
+import {receive} from "./receive";
+import {udevStatus, clearUdevError, catchUdevError} from "./udevStatus";
+import * as storage from "../chrome/storage";
+import type {Messages} from "../protobuf/messages.js";
 
+type MessageToTrezor = {id: ?number, type: ?string, message: Object};
+type MessageFromTrezor = {type: string, message: Object};
 
 /**
  * Sends a message to Trezor and returns
@@ -35,18 +39,18 @@ var storage = require('../chrome/storage');
  * @returns {Object} res.message Message as JSON
  * @returns {string} res.type Message name
  */
-function call(message, messages) {
-
-  var id = message.id;
-  var type = message.type;
-  var body = message.message;
-  if (id == null) {
+export function call(message:MessageToTrezor, messages:Messages): Promise<MessageFromTrezor> {
+  if (message.id == null) {
     throw new Error("Connection id is not defined.");
   }
-  if (type == null) {
+  if (message.type == null) {
     throw new Error("Type is not defined");
   }
   // body can probably be null 
+
+  var id: number = message.id;
+  var type: string = message.type;
+  var body: Object = message.message;
 
   return send(messages, id, type, body).then(function () {
 
@@ -54,7 +58,7 @@ function call(message, messages) {
 
       // after first back and forth, it's clear that udev is installed => afterInstall is false, error is false
       return storage.set("afterInstall", "false").then(function() {
-        udevStatus.setError(false);
+        clearUdevError();
 
         return response;
       });
@@ -62,7 +66,7 @@ function call(message, messages) {
     });
   }).catch(function (error) {
     if (message.type === "Initialize") {
-      return udevStatus.catchUdevError(error);
+      return catchUdevError(error);
     } else {
       return Promise.reject(error);
     }
@@ -70,4 +74,4 @@ function call(message, messages) {
 
 }
 
-module.exports = call;
+

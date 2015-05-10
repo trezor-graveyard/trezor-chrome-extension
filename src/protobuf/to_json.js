@@ -1,3 +1,4 @@
+/* @flow */
 /**
  * This file is part of the TREZOR project.
  *
@@ -30,11 +31,13 @@
  *
  * This conversion is probably not very stable and does not yet "scale" that well, since it's
  * intended just for our relatively small usecase.
+ *
+ * (Also it's totally stupid having to do this in the first place.)
  */
 
-var _ = require('lodash');
+import * as _ from "lodash";
 
-function protocolToJSON(p) {
+export function protocolToJSON(p: any): Object {
   var res = {};
 
   //TODO: what if there are more files?
@@ -43,7 +46,7 @@ function protocolToJSON(p) {
   return res;
 }
 
-function fileToJSON(f) {
+function fileToJSON(f: any): Object {
   var res = {};
   res.package = f.package;
   res.options = f.options;
@@ -55,7 +58,7 @@ function fileToJSON(f) {
   return res;
 }
 
-function enumToJSON(enumm) {
+function enumToJSON(enumm: any): Object {
   var res = {};
   res.name = enumm.name;
   res.values = _.values(enumm.value).map(enum_valueToJSON);
@@ -63,7 +66,7 @@ function enumToJSON(enumm) {
   return res;
 }
 
-function extensionToJSON(extensions) {
+function extensionToJSON(extensions: any): Object {
   var res = {};
   _.values(extensions).forEach(function (extension) {
     var extendee = extension.extendee.slice(1);
@@ -77,14 +80,14 @@ function extensionToJSON(extensions) {
   return _.values(res);
 }
 
-function enum_valueToJSON(val) {
+function enum_valueToJSON(val: any): Object {
   var res = {};
   res.name = val.name;
   res.id = val.number;
   return res;
 }
 
-function messageToJSON(message) {
+function messageToJSON(message: any): Object {
   var res = {};
   res.enums = [];
   res.name = message.name;
@@ -96,27 +99,27 @@ function messageToJSON(message) {
 }
 
 var type_map = {
-  1: "double",
-  2: "float",
-  3: "int64",
-  4: "uint64",
-  5: "int32",
-  6: "fixed64",
-  7: "fixed32",
-  8: "bool",
-  9: "string",
-  10: "group",
-  11: "message",
-  12: "bytes",
-  13: "uint32",
-  14: "enum",
-  15: "sfixed32",
-  16: "sfixed64",
-  17: "sint32",
-  18: "sint64"
+  "1": "double",
+  "2": "float",
+  "3": "int64",
+  "4": "uint64",
+  "5": "int32",
+  "6": "fixed64",
+  "7": "fixed32",
+  "8": "bool",
+  "9": "string",
+  "10": "group",
+  "11": "message",
+  "12": "bytes",
+  "13": "uint32",
+  "14": "enum",
+  "15": "sfixed32",
+  "16": "sfixed64",
+  "17": "sint32",
+  "18": "sint64"
 }
 
-function fieldToJSON(field) {
+function fieldToJSON(field: any): Object {
   var res = {};
   if (field.label === 1) {
     res.rule = "optional";
@@ -137,4 +140,4 @@ function fieldToJSON(field) {
   return res;
 }
 
-module.exports = protocolToJSON;
+

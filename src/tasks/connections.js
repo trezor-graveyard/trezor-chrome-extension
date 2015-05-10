@@ -1,3 +1,4 @@
+/* @flow */
 /**
  * This file is part of the TREZOR project.
  *
@@ -20,16 +21,20 @@
  */
 
 'use strict';
-var hid = require('../chrome/hid');
-var udevStatus = require('./udevStatus');
+import * as hid from "../chrome/hid";
+import {catchUdevError} from "./udevStatus";
 
 // global object with deviceId => connectionId mapping
-var connectionsMap = {};
-var reverse = {};
+var connectionsMap: {[keys: number]: number} = {};
+var reverse: {[keys: number]: number} = {};
 
-function acquire(id) {
+export function acquire(id: number): Promise<{session: number}> {
 
   var releasePromise;
+
+  // "stealing" sessions
+  // if I am already connected (in a different tab for example),
+  // disconnect that one
   if (connectionsMap[id] != null) {
     releasePromise = release(connectionsMap[id]);
   } else {
@@ -47,22 +52,19 @@ function acquire(id) {
     return {
       session: connectionId
     }
-  }).catch(udevStatus.catchUdevError);
+  }).catch(catchUdevError);
 }
 
-function release(connectionId) {
-  return hid.disconnect(connectionId).then(function (connectionId) {
+export function release(connectionId: number): Promise<string> {
+  return hid.disconnect(connectionId).then(function () {
     var deviceId = reverse[connectionId];
-    delete reverse.connectionId;
-    delete connectionsMap.deviceId;
+    delete reverse[connectionId];
+    delete connectionsMap[deviceId];
     return "Success";
   });
 }
 
-function getSession(deviceId) {
+export function getSession(deviceId: number): ?number {
   return connectionsMap[deviceId];
 }
 
-module.exports.acquire = acquire;
-module.exports.release = release;
-module.exports.getSession = getSession;

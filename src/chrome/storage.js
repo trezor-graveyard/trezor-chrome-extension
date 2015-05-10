@@ -1,3 +1,4 @@
+/* @flow */
 /**
  * This file is part of the TREZOR project.
  *
@@ -32,7 +33,7 @@
  * @param {String} key
  * @returns {Promise.<Object>} Thing from the storage, or null
  */
-module.exports.get = function (key) {
+export function get(key: string): Promise<any> {
   return new Promise(function (resolve, reject) {
     try {
       chrome.storage.local.get(key, function (items) {
@@ -54,20 +55,20 @@ module.exports.get = function (key) {
 }
 
 /**
- * Get from storage
+ * Set to storage
  * @param {String} key
- * @returns {Promise.<Object>} Thing from the storage, or null
+ * @param {Object} value Thing to save to the storage
  */
-module.exports.set = function (key, value) {
+module.exports.set = function (key:string, value:any): Promise<void> {
   return new Promise(function (resolve, reject) {
     try {
-      var obj = {};
+      var obj: {} = {};
       obj[key] = value;
       chrome.storage.local.set(obj, function () {
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError);
         } else {
-          resolve();
+          resolve(undefined);
         }
       });
     } catch (e) {

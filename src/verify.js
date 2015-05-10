@@ -1,3 +1,4 @@
+/* @flow */
 /**
  * This file is part of the TREZOR project.
  *
@@ -26,22 +27,18 @@
  *
  * Keys are loaded (by node at compile time) from ../constants.js
  */
+ 
+import {ecdsa, ECSignature, ECPubKey, crypto} from "bitcoinjs-lib";
 
-var ecdsa = require('bitcoinjs-lib').ecdsa;
-var ECSignature = require('bitcoinjs-lib').ECSignature;
-var ECPubKey = require('bitcoinjs-lib').ECPubKey;
-var crypto = require('bitcoinjs-lib').crypto;
-var BigInteger = require('bigi');
+import * as BigInteger from "bigi";
+import * as ecurve from "ecurve";
 
-var ecurve = require('ecurve')
 var curve = ecurve.getCurveByName('secp256k1')
 
-//var ProtoBuf = require('protobufjs');
+import * as constants from './constants.js';
 
-var Promise = require('promise');
-
-var keys = require('./constants.js').SATOSHI_KEYS
-  .map(function (key) {
+var keys: Array<Buffer> = constants.SATOSHI_KEYS
+  .map(key => {
     return new Buffer(key, 'binary');
   });
 
@@ -53,21 +50,19 @@ var keys = require('./constants.js').SATOSHI_KEYS
  * @param {Array[Buffer]} data Data that are signed
  * @returns {boolean} True, iff the signature is correct with any of the pubkeys
  */
-function verify(pubkeys, signature, data) {
-  var r = BigInteger.fromBuffer(signature.slice(0, 32))
-  var s = BigInteger.fromBuffer(signature.slice(32))
+function verify(pubkeys: Array<Buffer>, bsignature: Buffer, data: Buffer): boolean {
+  var r = BigInteger.fromBuffer(bsignature.slice(0, 32))
+  var s = BigInteger.fromBuffer(bsignature.slice(32))
   var signature = new ECSignature(r, s)
 
   var hash = crypto.sha256(data);
 
-  return pubkeys.some(function (pubkey) {
+  return pubkeys.some(pubkey => {
 
     var Q = ECPubKey.fromBuffer(pubkey).Q;
     return ecdsa.verify(curve, hash, signature, Q);
 
   });
-
-  var res = true;
 }
 
 /**
@@ -75,15 +70,14 @@ function verify(pubkeys, signature, data) {
  * @param {string} data Data in hexadecimal that is signature plus the data
  * @returns {Promise.<Buffer, error>} The data, if correctly signed, else reject
  */
-function verifyHexBin(data) {
+export function verifyHexBin(data: string): Promise<Buffer> {
   var signature = new Buffer(data.slice(0, 64 * 2), 'hex');
-  var data = new Buffer(data.slice(64 * 2), 'hex');
-  var verified = verify(keys, signature, data);
+  var dataB = new Buffer(data.slice(64 * 2), 'hex');
+  var verified = verify(keys, signature, dataB);
   if (!verified) {
     return Promise.reject("Not correctly signed.");
   } else {
-    return Promise.resolve(data);
+    return Promise.resolve(dataB);
   }
 }
 
-module.exports = verifyHexBin;

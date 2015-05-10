@@ -1,3 +1,4 @@
+/* @flow */
 /**
  * This file is part of the TREZOR project.
  *
@@ -25,12 +26,12 @@
  * Module for loading the protobuf description from serialized description
  */
 
-var ProtoBuf = require('protobufjs');
-var _ = require('lodash');
+import * as ProtoBuf from "protobufjs";
+import * as _ from "lodash";
 
-var protocolToJSON = require('./to_json.js');
-
-var compiledConfigProto = require('../config_proto_compiled.js'); 
+import {Messages} from "./messages.js";
+import {protocolToJSON} from "./to_json.js";
+import * as compiledConfigProto from "../config_proto_compiled.js";
 
 
 /**
@@ -39,7 +40,7 @@ var compiledConfigProto = require('../config_proto_compiled.js');
  * @returns {Object.<string, ProtoBuf.Builder.Message>} Building result from protobuf.js;
  *                                                                can be used to build messages
  */
-function parseConfigure(data) {
+export function parseConfigure(data: Buffer): Messages {
     var configBuilder = compiledConfigProto["Configuration"];
     var loadedConfig = configBuilder.decode(data);
 
@@ -54,26 +55,6 @@ function parseConfigure(data) {
     var protobufMessages = ProtoBuf.newBuilder({})["import"](protocolJSON).build();
 
 
-    // This is a little hacky
-    // I am building an object, where keys are numbers and values are 
-    // names of appropriate messages plus their protobuf.js builders
-
-    // This is then put to the original PB.js object with builders as an additional propery
-    var messagesByType = {};
-
-    _.keys(protobufMessages.MessageType).forEach(function (longName) {
-      var typeId = protobufMessages.MessageType[longName];
-      var shortName = longName.split('_')[1];
-      messagesByType[typeId] = {
-        name: shortName,
-        constructor: protobufMessages[shortName]
-      };
-    });
-
-    protobufMessages.messagesByType = messagesByType;
-
-
-    return protobufMessages;
+    return new Messages(protobufMessages);
 }
 
-module.exports = parseConfigure;

@@ -1,3 +1,4 @@
+/* @flow */
 /**
  * This file is part of the TREZOR project.
  *
@@ -21,8 +22,10 @@
 
 'use strict';
 
-var verifyEcdsa = require('../verify.js');
-var parseProtobuf = require('../protobuf/parse_protocol.js');
+import {verifyHexBin} from "../verify.js";
+import {parseConfigure} from "../protobuf/parse_protocol.js";
+import type {Messages} from "../protobuf/messages.js";
+
 
 
 /**
@@ -31,10 +34,9 @@ var parseProtobuf = require('../protobuf/parse_protocol.js');
  * @returns {Promise.<Object.<string, ProtoBuf.Builder.Message>>} Building result from protobuf.js;
  *                                                                can be used to build messages
  */
-function configure (signedData) {
-  return verifyEcdsa(signedData).then(function (data) {
-    return parseProtobuf(data);
+export function configure (signedData: string): Promise<Messages> {
+  return verifyHexBin(signedData).then(function (data: Buffer): Messages {
+    return parseConfigure(data);
   })
 }
 
-module.exports = configure;

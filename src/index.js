@@ -1,3 +1,4 @@
+/* @flow */
 /**
  * This file is part of the TREZOR project.
  *
@@ -21,44 +22,48 @@
 
 'use strict';
 
-require('./protobuf/monkey_patch.js').patch();
+import {patch} from "./protobuf/monkey_patch.js";
+patch();
 
-var Tasks = require('./tasks');
-var Promise = require('promise');
-var storage = require('./chrome/storage');
+import {tasks} from "./tasks";
+import * as storage from "./chrome/storage";
+import type {Messages} from "./protobuf/messages";
+
+type MessageToTrezor = {id: ?number, type: ?string, message: Object};
+type MessageFromTrezor = {type: string, message: Object};
 
 // description of messages, loaded by configure
 // if null -> not configured yet
-var messages = null;
+var messages: ?Messages = null;
 
 var responseFunctions = {
-  ping: Tasks.ping,
-  enumerate: Tasks.enumerate,
-  listen: Tasks.listen,
-  acquire: Tasks.acquire,
-  release: Tasks.release,
-  udevStatus: Tasks.udevStatus,
+  ping: tasks.ping,
+  enumerate: tasks.enumerate,
+  listen: tasks.listen,
+  acquire: tasks.acquire,
+  release: tasks.release,
+  udevStatus: tasks.udevStatus,
 
-  call: function (body) {
+  call: function (body: MessageToTrezor): Promise<MessageFromTrezor> {
     if (messages == null) {
       return Promise.reject(new Error("No protocol definition, call configure"))
     }
-    return Tasks.call(body, messages);
+    return tasks.call(body, messages);
   },
 
-  configure: function (body) {
-    return Tasks.configure(body).then(function (loadedMessages) {
+  configure: function (body: string): Promise<string> {
+    return tasks.configure(body).then(function (loadedMessages: Messages): void {
       messages = loadedMessages;
-    }).then(function () {
+    }).then(function (): string {
       return "Success"
     });
   }
 }
 
-function handleMessage(request, sender, sendResponse) {
+function handleMessage(request: Object, sender: ChromeMessageSender, sendResponse: (response: Object) => void): boolean {
   console.log("Message arrived: ", request);
 
-  var responseFunction = Tasks.none;
+  var responseFunction = tasks.none;
 
   if (responseFunctions[request.type]) {
     responseFunction = responseFunctions[request.type];
@@ -111,4 +116,3 @@ chrome.app.runtime.onLaunched.addListener(function () {
     }, function () {})
   }
 });
-//module.exports = {};

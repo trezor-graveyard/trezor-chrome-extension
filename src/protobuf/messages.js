@@ -20,30 +20,34 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-'use strict';
+// This is a simple class that represents information about messages,
+// as they are loaded from the protobuf definition,
+// so they are understood by both sending and recieving code.
 
 import * as ProtoBuf from "protobufjs";
-var ByteBuffer = ProtoBuf.ByteBuffer;
+import * as _ from "lodash";
 
-// monkey-patching ProtoBuf,
-// so that bytes are loaded correctly from hexadecimal
-export function patch(): void {
-  ProtoBuf.Reflect.Message.Field.prototype.verifyValueOriginal = ProtoBuf.Reflect.Message.Field.prototype.verifyValue;
+type MessageArray<KeyType> = { [key: KeyType]: ProtoBuf.Bulder.Message };
 
-  ProtoBuf.Reflect.Message.Field.prototype.verifyValue = function (value, skipRepeated) {
-    var newValue = value;
-    if (this.type === ProtoBuf.TYPES["bytes"]) {
-      console.log("Maybe converting from ", value);
+export class Messages {
+  messagesByName: MessageArray<string>;
+  messagesByType: MessageArray<number>;
+  messageTypes: { [key: string]: number };
 
-      if (value != null) {
-        if (typeof value === "string") {
-          console.log("Converting from ", value);
-          newValue = ByteBuffer.wrap(value, "hex");
-          console.log("Converted to ", newValue);
-        }
-      }
-    }
-    return this.verifyValueOriginal(newValue, skipRepeated);
+  constructor(messages: MessageArray<string>) {
+    this.messagesByName = messages;
+
+    var messagesByType: MessageArray<number> = {};
+    _.keys(messages.MessageType).forEach(longName => {
+      var typeId = messages.MessageType[longName];
+      var shortName = longName.split('_')[1];
+      messagesByType[typeId] = {
+        name: shortName,
+        constructor: messages[shortName]
+      };
+    });
+    this.messagesByType = messagesByType;
+    this.messageTypes = messages.MessageType;
   }
-
 }
+

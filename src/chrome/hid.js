@@ -1,3 +1,4 @@
+/* @flow */
 /**
  * This file is part of the TREZOR project.
  *
@@ -22,20 +23,20 @@
 
 'use strict';
 
-var constants = require('../constants.js');
+import * as constants from '../constants.js';
 
 
 /**
  * Enumerates trezors.
  * @returns {Promise.<Array.<HidDeviceInfo>>} devices
  */
-module.exports.enumerate = function () {
+export function enumerate(): Promise<Array<ChromeHidDeviceInfo>> {
   return new Promise(function (resolve, reject) {
     try {
 
       chrome.hid.getDevices(
         constants.TREZOR_DESC,
-        function (devices) {
+        function (devices: Array<ChromeHidDeviceInfo>): void {
           if (chrome.runtime.lastError) {
             reject(chrome.runtime.lastError);
           } else {
@@ -60,7 +61,7 @@ module.exports.enumerate = function () {
  * @param {ArrayBuffer} data Raw data to push to trezor.
  * @return {Promise} Resolves iff the data is successfully pushed
  */
-module.exports.send = function (id, data) {
+export function send(id: number, data: ArrayBuffer): Promise<void> {
   if (id == null) {
     Promise.reject("No ID to hid.send");
   }
@@ -71,7 +72,7 @@ module.exports.send = function (id, data) {
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError);
         } else {
-          resolve();
+          resolve(undefined); //bug in flow...
         }
       });
 
@@ -88,7 +89,7 @@ module.exports.send = function (id, data) {
  * @param {integer} id ConnectionId of Trezor (returned by chrome.hid.connect)
  * @returns {Promise.<ArrayBuffer>} Raw data from trezor, or rejected if error
  */
-module.exports.receive = function (id) {
+export function receive(id: number): Promise<ArrayBuffer> {
   if (id == null) {
     Promise.reject("No ID to hid.receive");
   }
@@ -96,7 +97,7 @@ module.exports.receive = function (id) {
   return new Promise(function (resolve, reject) {
     try {
 
-      chrome.hid.receive(id, function (reportId, data) {
+      chrome.hid.receive(id, function (reportId: number, data: ArrayBuffer) {
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError);
         } else {
@@ -115,7 +116,7 @@ module.exports.receive = function (id) {
  * @param {integer} id Device ID that chrome gives me
  * @return {Promise.<integer>} Connection ID of the device. It is *different* from the device ID!
  */
-module.exports.connect = function (id) {
+export function connect(id: number): Promise<number> {
   if (id == null) {
     Promise.reject("No ID to hid.connect");
   }
@@ -140,17 +141,17 @@ module.exports.connect = function (id) {
  * @param {integer} id Connection ID (*not* device ID!)
  * @return {Promise} Resolves on success, resolves to nothing
  */
-module.exports.disconnect = function(id) {
+export function disconnect(id: number): Promise<void> {
   if (id == null) {
     Promise.reject("No ID to hid.disconnect");
   }
   return new Promise(function (resolve, reject) {
     try {
-      chrome.hid.disconnect(id, function (connection) {
+      chrome.hid.disconnect(id, function () {
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError);
         } else {
-          resolve();
+          resolve(undefined); //bug in flow...
         }
       });
 

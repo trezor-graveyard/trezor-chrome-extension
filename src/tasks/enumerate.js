@@ -1,3 +1,4 @@
+/* @flow */
 /**
  * This file is part of the TREZOR project.
  *
@@ -20,28 +21,24 @@
  */
 
 'use strict';
-var hid = require('../chrome/hid');
-var connections = require('./connections');
+import * as hid from "../chrome/hid";
+import * as connections from "./connections";
 
-/**
- * Converts a HID device to a description that trezor.js understands
- * @param {HidDeviceInfo} device
- * @returns {Object}
- */
-function deviceToJSON(device) {
-  var path = device.deviceId;
-  var vendor = device.vendorId;
-  var product = device.productId;
-  var serialNumber = ""; //TODO: is this needed?
-  var session = connections.getSession(path);
-  return {
-    path: path,
-    vendor: vendor,
-    product: product,
-    serialNumber: serialNumber,
-    session: session
-  };
+export class TrezorDeviceInfo {
+  path: number;
+  vendor: number;
+  product: number;
+  serialNumber: number; //always 0
+  session: ?number; //might be null/undefined
+  constructor(device: ChromeHidDeviceInfo) {
+    this.path = device.deviceId;
+    this.vendor = device.vendorId;
+    this.product = device.productId;
+    this.serialNumber = 0;
+    this.session = connections.getSession(this.path);
+  }
 }
+
 
 /**
  * Converts a HID device array to a description that trezor.js understands.
@@ -50,9 +47,9 @@ function deviceToJSON(device) {
  * @param {Array.<HidDeviceInfo>} devices
  * @returns {Array.<Object>}
  */
-function devicesToJSON(devices) {
+function devicesToJSON(devices: Array<ChromeHidDeviceInfo>): Array<TrezorDeviceInfo> {
 
-  function compare(a, b) {
+  function compare(a: ChromeHidDeviceInfo, b: ChromeHidDeviceInfo): number {
     if (a.deviceId < b.deviceId)
       return -1;
     if (a.deviceId > b.deviceId)
@@ -60,7 +57,7 @@ function devicesToJSON(devices) {
     return 0;
   }
 
-  return devices.sort(compare).map(deviceToJSON);
+  return devices.sort(compare).map( d => new TrezorDeviceInfo(d));
 }
 
 
@@ -68,10 +65,9 @@ function devicesToJSON(devices) {
  * Returns devices in JSON form
  * @returns {Array.<Object>}
  */
-function enumerate() {
-  return hid.enumerate().then(function (devices) {
+export function enumerate(): Promise<Array<TrezorDeviceInfo>> {
+  return hid.enumerate().then(function (devices: Array<ChromeHidDeviceInfo>): Array<TrezorDeviceInfo> {
     return devicesToJSON(devices);
   });
 }
 
-module.exports = enumerate;

@@ -1,3 +1,4 @@
+/* @flow */
 /**
  * This file is part of the TREZOR project.
  *
@@ -20,22 +21,19 @@
  */
 
 'use strict';
-var enumerate = require('./enumerate');
-var constants = require('../constants.js');
-var Promise = require('promise');
+import {enumerate} from "./enumerate";
+import * as constants from "../constants";
+import type {TrezorDeviceInfo} from "./enumerate";
 
-var iterMax = constants.LISTEN_ITERS;
-var delay = constants.LISTEN_DELAY;
-var lastStringified = null;
+var iterMax: number = constants.LISTEN_ITERS;
+var delay: number = constants.LISTEN_DELAY;
+var lastStringified: ?string = null;
 
-/**
- * Helper function for making Promise out of timeout
- * (I am surprised this is not in Promise library already)
- * @param {function} function function that will get run (with no "this")
- * @param {int} delay
- * @param {Array} params p
- */
-function timeoutPromise(func, delay, params) {
+// Helper function for making Promise out of timeout
+// (I am surprised this is not in Promise library already)
+
+// unfortunately, flowtype cannot do the typechecking in here (variadic doesn't work here)
+function timeoutPromise(func: Function, delay: number, params: Array<any>): any {
   return new Promise(function (resolve, reject) {
     window.setTimeout(function () {
       try {
@@ -54,7 +52,7 @@ function timeoutPromise(func, delay, params) {
  * @param {string} oldStringified stringified
  * @return {Promise.<Array.<Object>>} List of devices, resolves all the promises
  */
-function runIter(iteration, oldStringified) {
+function runIter(iteration: number, oldStringified: ?string): Promise<Array<TrezorDeviceInfo>> {
   return enumerate().then(function (devices) {
     var stringified = JSON.stringify(devices);
     if ((stringified !== oldStringified) || (iteration === iterMax)) {
@@ -70,8 +68,7 @@ function runIter(iteration, oldStringified) {
  * Function that runs listen
  * @return {Promise.<Array.<Object>>} List of devices, resolves all the promises
  */
-function listen() {
+export function listen(): Promise<Array<TrezorDeviceInfo>> {
   return runIter(0, lastStringified);
 }
 
-module.exports = listen;

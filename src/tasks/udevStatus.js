@@ -1,3 +1,4 @@
+/* @flow */
 /**
  * This file is part of the TREZOR project.
  *
@@ -20,24 +21,28 @@
  */
 
 'use strict';
-var platformInfo = require('../chrome/platformInfo');
-var storage = require('../chrome/storage');
-var Promise = require('promise');
 
-var hasError = false;
+import {platformInfo} from "../chrome/platformInfo";
+import * as storage from "../chrome/storage";
 
-var cachedIsLinux;
+var hasError: boolean = false;
+
+//-1 -> undefined
+// 0 -> not linux
+// 1 -> linux
+var cachedIsLinux: number = -1;
 
 /**
  * Is this computer linux?
  * @return {Promise.<Boolean>} True or false, depending on OS
  */
-function isLinux() {
-  if (cachedIsLinux !== undefined) {
-    return Promise.resolve(cachedIsLinux);
+function isLinux(): Promise<boolean> {
+  if (cachedIsLinux != -1) {
+    return Promise.resolve(cachedIsLinux == 1);
   }
-  return platformInfo.platformInfo().then(function (info) {
-    cachedIsLinux = (info.os === "linux");
+  return platformInfo().then(function (info) {
+    var isLinux = (info.os === "linux");
+    cachedIsLinux = isLinux ? 1 : 0;
     return cachedIsLinux;
   })
 }
@@ -46,7 +51,7 @@ function isLinux() {
  * Right after install I set up a "afterInstall
  * @return {Promise.<Boolean>}
  */
-function isAfterInstall() {
+function isAfterInstall(): Promise<boolean> {
   return storage.get("afterInstall").then(function (afterInstall) {
     return (afterInstall === true);
   })
@@ -57,17 +62,19 @@ function isAfterInstall() {
  * Sets error.
  * @param error {Boolean}
  */
-function setError(error) {
+function setError(error: boolean): void {
   hasError = error;
 }
 
-module.exports.setError = setError;
+export function clearUdevError(): void {
+  setError(false);
+}
 
 /**
  * Returns udev status.
  * @return {Promise.<String>} "display" or "hide".
  */
-module.exports.udevStatus = function () {
+export function udevStatus(): Promise<string> {
   return isLinux().then(function (linux) {
     return isAfterInstall().then(function (afterInstall) {
       if ((afterInstall || hasError) && linux) {
@@ -79,13 +86,12 @@ module.exports.udevStatus = function () {
   })
 }
 
-
 /**
  * Helper function for catching udev errors. It gets called in
  * tasks/call.js (only in initialize) and tasks/connections.js (in acquire).
  * @return {Promise} Rejection with the original error
  */
-module.exports.catchUdevError = function (error) {
+export function catchUdevError (error: Error): Promise<void> {
   var errMessage = error;
   if (errMessage.message !== undefined) {
     errMessage = errMessage.message;

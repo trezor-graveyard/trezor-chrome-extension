@@ -1,3 +1,4 @@
+/* @flow */
 /**
  * This file is part of the TREZOR project.
  *
@@ -26,27 +27,43 @@
  */
 
 
+import {enumerate} from "./enumerate";
+import {listen} from "./listen";
+import {call} from "./call";
+import {configure} from "./configure";
+import {acquire, release} from "./connections";
+import {udevStatus} from "./udevStatus";
+import type {Messages} from "../protobuf/messages";
+import type {TrezorDeviceInfo} from "./enumerate";
 
-
-function none() {
+function none(): Promise<void> {
   return Promise.reject("unknown message type");
 }
 
-function ping() {
+function ping(): Promise<string> {
   return Promise.resolve("pong");
 }
 
-module.exports = {
-    enumerate: require('./enumerate'),
-    listen: require('./listen'),
-    call: require('./call'),
+export var tasks: {
+             enumerate: () => Promise<Array<TrezorDeviceInfo>>,
+             listen: () => Promise<Array<TrezorDeviceInfo>>, 
+             call: (message:{id: ?number, type: ?string, message: Object}, messages:Messages) => 
+                                                                    Promise<{type: string, message: Object}>,
+             none: () => Promise<void>,
+             ping: () => Promise<string>,
+             configure: (signedData: string) => Promise<Messages>,
+             release: (connectionId: number) => Promise<string>,
+             acquire: (id: number) => Promise<{session: number}> ,
+             udevStatus: () => Promise<string>
+            } = {
+    enumerate: enumerate,
+    listen: listen,
+    call: call,
     none: none,
     ping: ping,
-    //configure:ping, 
-    configure: require('./configure'),
-    acquire: require('./connections').acquire,
-    release: require('./connections').release,
-    udevStatus: require('./udevStatus').udevStatus
-}
-
+    configure: configure,
+    acquire: acquire,
+    release: release,
+    udevStatus: udevStatus
+};
 

@@ -1,3 +1,4 @@
+/* @flow */
 /**
  * This file is part of the TREZOR project.
  *
@@ -27,23 +28,48 @@
  * Logic of "call" is broken to two parts - sending and recieving
  */
 
-var Promise = require('promise');
-var hid = require('../chrome/hid');
-var constants = require('../constants.js');
-var MessageDecoder = require('../protobuf/message_decoder.js');
-var ByteBuffer = require('protobufjs').ByteBuffer;
+import * as hid from "../chrome/hid";
+import * as constants from "../constants.js";
+import {MessageDecoder} from "../protobuf/message_decoder.js";
+import {ByteBuffer} from "protobufjs";
+import type {Messages} from "../protobuf/messages.js";
+
+type MessageFromTrezor = {type: string, message: Object};
+
+// input that might or might not be fully parsed yet
+class PartiallyParsedInput {
+  // Message type number
+  typeNumber: number;
+  // Expected length of the raq message, in bytes
+  expectedLength: number;
+  // Buffer with the beginning of message; can be non-complete and WILL be modified
+  // during the object's lifetime
+  buffer: ByteBuffer;
+  constructor(typeNumber: number, length: number) {
+    this.typeNumber = typeNumber;
+    this.expectedLength = length;
+    this.buffer = new ByteBuffer(length);
+  }
+  isDone(): boolean {
+    return (this.buffer.offset >= this.expectedLength);
+  }
+  append(buffer: ByteBuffer):void {
+    this.buffer.append(buffer);
+  }
+  arrayBuffer(): ArrayBuffer {
+    var byteBuffer = this.buffer;
+    byteBuffer.reset();
+    return byteBuffer.toArrayBuffer();
+  }
+}
 
 /**
  * Parses first raw input that comes from Trezor and returns some information about the whole message.
  *
  * Throws error if something's wrong
  * @param {Uint8Array} bytes Bytes from Trezor
- * @returns {Object} d
- * @returns {integer} d.type Message type number
- * @returns {integer} d.length Expected length of the raw message, in bytes
- * @returns {ByteBuffer} d.buffer Buffer with the first part of message; can be non-complete
  */
-function parseFirstInput(bytes) {
+function parseFirstInput(bytes: Uint8Array): PartiallyParsedInput {
 
   // convert to ByteBuffer so it's easier to read
   var byteBuffer = ByteBuffer.concat([bytes]);
@@ -60,29 +86,18 @@ function parseFirstInput(bytes) {
   var length = byteBuffer.readUint32();
 
   // creating a new buffer with the right size
-  var resBuffer = new ByteBuffer(length);
-  resBuffer.append(byteBuffer);
-
-  return {
-    type: type,
-    length: length,
-    buffer: resBuffer
-  };
-
+  var res = new PartiallyParsedInput(type, length);
+  res.append(byteBuffer);
+  return res;
 };
 
 
-/**
- * If the whole message wasn't loaded in the first input, loads more inputs until everything is loaded.
- * @param {ByteBuffer} buffer Buffer with the already loaded message. This buffer *is modified* by this function.
- * @param {integer} id ConnectionId of Trezor (returned by chrome.hid.connect)
- * @param {integer} length Expected length of the raw message, in bytes
- * @param {Promise.<ByteBuffer>} Buffer with the message data
- */
-function receiveRest(buffer, id, length) {
+// If the whole message wasn't loaded in the first input, loads more inputs until everything is loaded.
+// note: the return value is not at all important since it's still the same parsedinput
+function receiveRest(parsedInput: PartiallyParsedInput, id: number): Promise<void> {
 
-  if (buffer.offset >= length) {
-    return Promise.resolve(buffer);
+  if (parsedInput.isDone()) {
+    return Promise.resolve(undefined); //flow bug
   }
 
   return hid.receive(id).then(function (data) {
@@ -91,8 +106,8 @@ function receiveRest(buffer, id, length) {
       throw new Error("Received no data.");
     }
 
-    buffer.append(data);
-    return receiveRest(buffer, id, length);
+    parsedInput.append(data);
+    return receiveRest(parsedInput, id);
   });
 }
 
@@ -103,21 +118,13 @@ function receiveRest(buffer, id, length) {
  * @returns {ArrayBuffer} d.buffer The message as a buffer
  * @returns {int} d.type Message type number
  */
-function receiveBuffer(id) {
+function receiveBuffer(id: number): Promise<PartiallyParsedInput> {
   return hid.receive(id).then(function (data) {
-    var firstInput = parseFirstInput(data);
+    var partialInput = parseFirstInput(data);
 
-    return receiveRest(firstInput.buffer, id, firstInput.length).then(function (byteBuffer) {
-
-      byteBuffer.reset();
-      var buffer = byteBuffer.toArrayBuffer();
-      return {
-        buffer: buffer,
-        type: firstInput.type
-      };
-
+    return receiveRest(partialInput, id).then(function () {
+        return partialInput;      
     });
-
   });
 }
 
@@ -129,18 +136,17 @@ function receiveBuffer(id) {
  * @returns {Object} res.message Message as JSON
  * @returns {string} res.type Message name
  */
-function receive(messages, id) {
+export function receive(messages: Messages, id: number): Promise<MessageFromTrezor> {
 
   return receiveBuffer(id).then(function (received) {
-    var typeId = received.type;
-    var buffer = received.buffer;
+    var typeId = received.typeNumber;
+    var buffer = received.arrayBuffer();
     var decoder = new MessageDecoder(messages, typeId, buffer);
     return {
-      message: decoder.decodeJSON(),
-      type: decoder.getMessageName()
+      message: decoder.decodedJSON(),
+      type: decoder.messageName()
     };
   });
 }
 
 
-module.exports = receive;

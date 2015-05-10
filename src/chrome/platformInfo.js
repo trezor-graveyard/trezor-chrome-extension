@@ -1,3 +1,4 @@
+/* @flow */
 /**
  * This file is part of the TREZOR project.
  *
@@ -21,10 +22,10 @@
 'use strict';
 
 //encapsulating chrome's platform info into Promise API
-module.exports.platformInfo = function () {
+export function platformInfo(): Promise<ChromePlatformInfo> {
   return new Promise(function (resolve, reject) {
     try {
-      chrome.runtime.getPlatformInfo(function (info) {
+      chrome.runtime.getPlatformInfo(function (info: ChromePlatformInfo) {
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError);
         } else {
