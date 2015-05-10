@@ -33,15 +33,13 @@ make zip
 Caveats
 -------
 
-On Mac OS X, Windows and Chrome OS, installing the extension should work without any root privileges. Unfortunately, on Linux, you have to run the following two commands:
+On Mac OS X, Windows and Chrome OS, installing the extension should work without any root privileges. Unfortunately, on Linux, you have install so-called udev rules as a root.
 
-```
-sudo wget https://raw.githubusercontent.com/trezor/trezor-common/master/udev/23-trezor.rules \
-      -O /usr/lib/udev/rules.d/23-trezor.rules
-sudo cp /usr/lib/udev/rules.d/23-trezor.rules /lib/udev/rules.d/23-trezor.rules 
-```
+If you are using MyTrezor.com, we are trying to detect the errors and offer you an easy package for the two most popular packaging systems (DEB and RPM).
 
-in order to install an USB rule for udev. Extension however does not need the root privileges.
+If you don't want to or can't install that, please refer to our documentation
+
+http://doc.satoshilabs.com/trezor-user/settingupchromeonlinux.html
 
 
 License
