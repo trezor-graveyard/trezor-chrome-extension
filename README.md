@@ -5,7 +5,7 @@ Chrome extension for [Bitcoin TREZOR](https://www.bitcointrezor.com/) by [Satosh
 
 It works at a very low level, only resending messages from and to TREZOR device; it contains no logic about device state etc.
 
-Extension is not yet available for public use, since it's not widely tested so far.
+Extension is available for download [at Google Web store](https://chrome.google.com/webstore/detail/jcjjhjgimijdkoamemaghajlhegmoclj) (and is automatically offered on [myTREZOR webwallet](https://www.mytrezor.com))
 
 
 Checking out sources
