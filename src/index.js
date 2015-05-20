@@ -108,7 +108,9 @@ function handleMessage(request: Object, sender: ChromeMessageSender, sendRespons
   return true;
 }
 
+chrome.runtime.onMessage.addListener(handleMessage);
 chrome.runtime.onMessageExternal.addListener(handleMessage);
+
 storage.get("afterInstall").then(function (afterInstall) {
   if (afterInstall === null) {
     return storage.set("afterInstall", true);
@@ -117,10 +119,22 @@ storage.get("afterInstall").then(function (afterInstall) {
   console.error(e)
 })
 
+var windowOpen : boolean = false;
+
 chrome.app.runtime.onLaunched.addListener(function () {
-  if (typeof chrome.browser !== "undefined") {
-    chrome.browser.openTab({
-      url: "https://www.mytrezor.com"
-    }, function () {})
+  if (!windowOpen) {
+    chrome.app.window.create('management/index.html', {
+      'innerBounds': {
+        'width': 774,
+        'height': 774
+      }
+    }, function (newWindow) {
+      windowOpen = true;
+      newWindow.onClosed.addListener(function () {
+        windowOpen = false;
+      });
+
+    });
   }
 });
+

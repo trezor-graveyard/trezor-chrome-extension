@@ -10,5 +10,11 @@ def fix(url):
    fixed = url.replace("https?", "*").replace("[\w\.-]+","*").replace('\.', ".").replace("(:\d+)?","").replace("(/.*)?","/*")
    return fixed
 
-print json.dumps(map(fix, whitelist), indent=4)
+with open('manifest_no_matches.json') as data_file:
+    manifest = json.load(data_file)
 
+manifest["externally_connectable"] = {"matches": list(map(fix, whitelist))}
+
+with open('extension/manifest.json', 'w') as outfile:
+    json.dump(manifest, outfile, indent=4)
+     

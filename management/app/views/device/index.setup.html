@@ -1,0 +1,26 @@
+<form ng-controller="DeviceSetupCtrl">
+
+  <h3>Welcome to TREZOR Setup!</h3>
+  <p class="lead">
+    Please take your time to read all of the instructions. Setting up your TREZOR
+    will take only a few minutes. When you're done, you can start using your TREZOR.
+  </p>
+
+  <div class="form-group">
+    <label for="label">Device label</label>
+    <input type="text" name="label" id="label" class="form-control"
+           placeholder="My TREZOR"
+           ng-model="settings.label">
+    <p class="help-block">
+      This label will be shown on the display when you plug your TREZOR in.
+      This is useful if you have more than one device.
+    </p>
+  </div>
+
+
+  <div class="form-group text-center">
+    <button class="btn btn-lg btn-success"
+            ng-click="setupDevice()">Continue</button>
+  </div>
+
+</form>

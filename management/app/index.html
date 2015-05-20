@@ -1,0 +1,181 @@
+<!doctype html>
+<html ng-csp="">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>TREZOR device management</title>
+    <meta name="description" content="myTREZOR Web Wallet">
+    <meta name="viewport" content="width=device-width">
+    <link rel="chrome-webstore-item" href="https://chrome.google.com/webstore/detail/jcjjhjgimijdkoamemaghajlhegmoclj">
+
+    <!-- build:css({.tmp,app}) styles/styles.css -->
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet" href="bower_components/bootstrap-slider/dist/css/bootstrap-slider.css">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/angular-csp.css">
+    <!-- endbuild -->
+  </head>
+  <body>
+    <!--[if lt IE 9]>
+    <div class="browsehappy alert alert-warning">
+      <h4>You are using an <strong>outdated</strong> browser.</h4>
+      Please <a href="http://browsehappy.com">upgrade your browser</a>
+      to improve your experience.
+    </div>
+    <![endif]-->
+    <div class="topbar navbar navbar-default">
+      <div class="container">
+        <div class="navbar-header">
+          <div class="navbar-brand" >
+            TREZOR device management
+          </div>
+        </div>
+
+        <ul class="nav navbar-nav navbar-right">
+            <li><a href="https://www.mytrezor.com" target="_blank">visit myTREZOR</a></li>
+        </ul>
+      </div>
+    </div>
+    <!-- Webwallet Application -->
+    <div id="webwalletApp-container"
+         ng-cloak>
+
+      <!-- Error -->
+      <div ng-controller="ErrorCtrl"
+           ng-cloak>
+        <div class="page-container container"
+             ng-if="error">
+          <ng-include src="'views/error.html'"></ng-include>
+        </div>
+      <div ng-if="!error">
+        <!-- Bar shown if the plugin is used and is deprecated  -->
+
+        <ng-include src="'views/topBars.html'">
+        </ng-include>
+
+        <div ng-controller="MainCtrl"
+            class="page-container container"
+            ng-if="(udevError.errorStatus)">
+            <ng-include src="'views/error.udev.html'"></ng-include>
+        </div>
+        
+        <div class="page-container container"
+              ng-if="!(udevError.errorStatus)"
+        >
+          <div class="row">
+
+            <!-- Content view -->
+            <div class="page-content col-xs-12">
+              <flash-messages>
+                <div ng-repeat="m in messages"
+                     ng-switch="m.level">
+                  <div class="alert alert-flash alert-danger"
+                       ng-switch-when="error">
+                    <h4 class="text-capitals">{{m.level}}!</h4>
+                    {{m.text}}
+                    <span ng-if="m.html" ng-bind-html="m.html"></span>
+                    <ng-include src="'views/debug.button.html'"></ng-include>
+                  </div>
+                  <div class="alert alert-flash alert-{{m.level}}"
+                       ng-switch-default>
+                    <h4 class="text-capitals">{{m.level}}</h4>
+                    {{m.text}}
+                    <span ng-if="m.html" ng-bind-html="m.html"></span>
+                    <ng-include src="'views/debug.button.html'"></ng-include>
+                  </div>
+                </div>
+              </flash-messages>
+              <ng-include src="'views/debug.log.html'"></ng-include>
+              <div ng-view></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+
+    </div>
+
+    <!-- build:js scripts/libs.js -->
+    <script src="bower_components/lodash/dist/lodash.js"></script>
+    <script src="bower_components/jquery/dist/jquery.js"></script>
+    <script src="bower_components/trezor.js/dist/trezor.js"></script>
+    <script src="bower_components/qrcode/lib/qrcode.js"></script>
+    <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/bowser/bowser.js"></script>
+    <script src="scripts/vendor/vendor.js"></script>
+    <!-- jsqrcode -->
+    <script src="bower_components/jsqrcode/src/grid.js"></script>
+    <script src="bower_components/jsqrcode/src/version.js"></script>
+    <script src="bower_components/jsqrcode/src/detector.js"></script>
+    <script src="bower_components/jsqrcode/src/formatinf.js"></script>
+    <script src="bower_components/jsqrcode/src/errorlevel.js"></script>
+    <script src="bower_components/jsqrcode/src/bitmat.js"></script>
+    <script src="bower_components/jsqrcode/src/datablock.js"></script>
+    <script src="bower_components/jsqrcode/src/bmparser.js"></script>
+    <script src="bower_components/jsqrcode/src/datamask.js"></script>
+    <script src="bower_components/jsqrcode/src/rsdecoder.js"></script>
+    <script src="bower_components/jsqrcode/src/gf256poly.js"></script>
+    <script src="bower_components/jsqrcode/src/gf256.js"></script>
+    <script src="bower_components/jsqrcode/src/decoder.js"></script>
+    <script src="bower_components/jsqrcode/src/qrcode.js"></script>
+    <script src="bower_components/jsqrcode/src/findpat.js"></script>
+    <script src="bower_components/jsqrcode/src/alignpat.js"></script>
+    <script src="bower_components/jsqrcode/src/databr.js"></script>
+    <!-- angular modules -->
+    <script src="bower_components/angular-qr/src/angular-qr.js"></script>
+    <script src="bower_components/angular-route/angular-route.js"></script>
+    <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+    <script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
+    <!-- bootstrap modules -->
+    <script src="bower_components/bootstrap/js/alert.js"></script>
+    <script src="bower_components/bootstrap/js/button.js"></script>
+    <script src="bower_components/bootstrap/js/transition.js"></script>
+    <script src="bower_components/bootstrap/js/dropdown.js"></script>
+    <script src="bower_components/bootstrap/js/modal.js"></script>
+    <script src="bower_components/bootstrap/js/tooltip.js"></script>
+    <script src="bower_components/bootstrap/js/popover.js"></script>
+    <script src="bower_components/bootstrap-slider/js/bootstrap-slider.js"></script>
+    <!-- others -->
+    <script src="bower_components/comma-separated-values/csv.js"></script>
+    <!-- endbuild -->
+
+    <!-- build:js({.tmp,app}) scripts/scripts.js -->
+    <script src="scripts/services/console.js"></script>
+    <script src="scripts/app.js"></script>
+    <script src="scripts/config.js"></script>
+    <script src="scripts/filters/filters.js"></script>
+    <!-- services -->
+    <script src="scripts/services/bip39.js"></script>
+    <script src="scripts/services/utils.js"></script>
+    <script src="scripts/services/slider.js"></script>
+    <script src="scripts/services/udevError.js"></script>
+    <script src="scripts/services/deviceService.js"></script>
+    <script src="scripts/services/firmwareService.js"></script>
+    <script src="scripts/services/DeviceList.js"></script>
+    <script src="scripts/services/MockDevice.js"></script>
+    <script src="scripts/services/TrezorDevice.js"></script>
+    <script src="scripts/services/modals/modalOpener.js"></script>
+    <script src="scripts/services/modals/pinModalService.js"></script>
+    <script src="scripts/services/modals/passphraseModalService.js"></script>
+    <script src="scripts/services/modals/setupModalService.js"></script>
+    <!-- directives -->
+    <script src="scripts/directives/flashMessages.js"></script>
+    <script src="scripts/directives/qrScan.js"></script>
+    <script src="scripts/directives/focus.js"></script>
+    <!-- controllers -->
+    <script src="scripts/controllers/debug.js"></script>
+    <script src="scripts/controllers/error.js"></script>
+    <script src="scripts/controllers/main.js"></script>
+    <script src="scripts/controllers/device/device.js"></script>
+    <script src="scripts/controllers/device/info.js"></script>
+    <script src="scripts/controllers/device/firmware.js"></script>
+    <script src="scripts/controllers/device/load.js"></script>
+    <script src="scripts/controllers/device/recovery.js"></script>
+    <script src="scripts/controllers/device/setup.js"></script>
+    <script src="scripts/controllers/device/wipe.js"></script>
+    <script src="scripts/controllers/modal/pin.js"></script>
+    <!-- compiled templates -->
+    <script src="scripts/templates.js"></script>
+    <!-- endbuild -->
+  </body>
+</html>

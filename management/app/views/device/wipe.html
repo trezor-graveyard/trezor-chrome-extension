@@ -1,0 +1,27 @@
+<!--This is not visible to user via GUI but it's useful for developing-->
+<div ng-controller="DeviceCtrl">
+
+
+  <div ng-if="!device.isConnected()" class="alert alert-warning">
+    <strong>Please connect your device</strong> to access this section.
+  </div>
+
+  <div ng-controller="DeviceWipeCtrl">
+
+    <fieldset ng-disabled="!device.isConnected()">
+      <div class="alert alert-danger alert-withicon alert-lg">
+        <span class="glyphicon glyphicon-warning-sign alert-icon"></span>
+        <h4>Do you really want to wipe the device?</h4>
+        <p>All data from the device will be lost! You can recover your funds
+        using recovery seed.<br></p>
+        <p class="alert-buttons">
+          <button class="btn btn-danger"
+                  ng-click="wipeDevice()">Wipe</button>
+          <a href="#/device/{{device.id}}" class="btn btn-link">Cancel</a>
+        </p>
+      </div>
+    </fieldset>
+
+  </div>
+
+</div>

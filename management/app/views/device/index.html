@@ -1,0 +1,36 @@
+<div ng-controller="DeviceCtrl">
+
+  <fieldset class="row" ng-disabled="device.status() !== 'connected'">
+
+    <div class="devsetup col-xs-8" ng-show="device.isEmpty()">
+      <ng-include src="'views/device/index.setup.html'"></ng-include>
+    </div>
+
+    <div class="devrestore col-xs-4 text-center" ng-show="device.isEmpty()">
+      <p class="help-block">Want to restore your wallet from recovery seed?</p>
+      <a class="btn btn-default"
+         ng-href="#/device/{{device.id}}/recovery"
+        >TREZOR Recovery</a>
+    </div>
+
+  </fieldset>
+
+  <div ng-if="!(shouldDisplayLoading())">
+
+    <ng-include src="'views/device/nav.html'"></ng-include>
+
+    <div class="tab-content" ng-hide="device.isEmpty()" >
+
+            <ng-include src="'views/device/index.basic.html'"></ng-include>
+
+
+
+
+    </div> <!--/tab-content-->
+
+  </div> <!--/!shouldDisplayLoading()-->
+
+
+
+</div> <!--DeviceCtrl-->
+

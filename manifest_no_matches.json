@@ -16,22 +16,7 @@
       "scripts": ["index.js"]
     }
   },
-  "externally_connectable": {
-    "matches": [
-      "*://localhost/*",
-      "*://localhost.mytrezor.com/*",
-      "https://mytrezor.com/*",
-      "https://*.mytrezor.com/*",
-      "https://trezor.github.io/*",
-      "https://greenaddress.it/*",
-      "https://*.greenaddress.it/*",
-      "https://coinprism.com/*",
-      "https://*.coinprism.com/*",
-      "https://bitex.la/*", 
-      "https://*.bitex.la/*"
-
-    ]
-  },
+  "externally_connectable": "WILL CHANGE",
   "permissions": [
     "hid", {
       "usbDevices": [{

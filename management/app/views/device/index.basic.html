@@ -1,0 +1,70 @@
+<div ng-controller="DeviceInfoCtrl">
+<div class="row">
+    <div class="col-xs-2 settings-left">
+        Label
+    </div>
+    <div class="col-xs-2 settings-right">
+        {{device.label()}}
+    </div>
+    <div class="col-xs-2 settings-btn"
+         tooltip="{{device.isConnected()?null: 'Connect the device to change the label.'}}"
+        tooltip-trigger="mouseenter"
+        tooltip-placement="right"
+        tooltip-append-to-body="true"
+    >
+        <button class="btn btn-default btn-sm"
+          ng-click="changeLabel(device)"
+          ng-disabled="!device.isConnected()"
+        >
+            <span class="glyphicon glyphicon-pencil hidden-xs hidden-sm hidden-md"></span> Change label
+        </button>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-2 settings-left">
+        PIN protection
+    </div>
+    <div class="col-xs-2 settings-right">
+        <span ng-show="device.features.pin_protection" class="text-success">Enabled</span>
+        <span ng-hide="device.features.pin_protection" class="text-danger">Disabled</span>
+    </div>
+    <div class="col-xs-2 settings-btn"
+        tooltip="{{device.isConnected()? 
+                  null:
+                (device.features.pin_protection ? 
+                    'Connect the device to change PIN.'
+                   :'Connect the device to enable PIN.'
+                )}}"
+        tooltip-trigger="mouseenter"
+        tooltip-placement="right"
+        tooltip-append-to-body="true"
+    >
+        <button class="btn btn-default btn-sm"
+            ng-click="changePin()"
+            ng-disabled="!device.isConnected()"
+            >
+                <span class="glyphicon glyphicon-pencil hidden-xs hidden-sm hidden-md" ng-show="device.features.pin_protection"></span>
+                <span class="glyphicon glyphicon-ok hidden-xs hidden-sm hidden-md" ng-hide="device.features.pin_protection"></span>
+                <span ng-show="device.features.pin_protection">Change PIN</span>
+                <span ng-hide="device.features.pin_protection">Enable PIN</span>
+        </button>
+    </div>
+</div> 
+
+<div class="row"
+    ng-enabled="!device.isConnected()"
+    ng-show="
+            !(device.features.pin_protection)
+            "
+>
+    <div class="col-xs-2"></div>
+  <p class="text-muted col-xs-6">
+    Using PIN protection is highly recommended. PIN prevents unauthorized persons from stealing
+    your bitcoins even when they get physical access to your device.
+  </p>
+</div>
+
+
+
+</div>

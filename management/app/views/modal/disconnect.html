@@ -1,0 +1,19 @@
+<ng-include src="'views/modal/upperheader.html'"></ng-include>
+
+<div class="modal-header">
+  <button type="button" class="close" title="Cancel"
+          ng-if="!disableCancel"
+          ng-click="$dismiss()">&times;</button>
+  <h4 class="modal-title">Disconnect your Trezor now</h4>
+</div>
+<div class="modal-body" ng-if="customText==null">
+  myTREZOR will forget your Trezor right after you disconnect it.
+</div>
+<div class="modal-body" ng-if="customText!=null">
+    {{customText}}
+</div>
+<div class="modal-footer"
+     ng-if="!disableCancel">
+  <button type="button" class="btn btn-default"
+          ng-click="$dismiss()">Cancel</button>
+</div>

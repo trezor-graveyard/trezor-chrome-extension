@@ -46,7 +46,8 @@ declare class ChromePlatformInfo {
 declare class ChromeRuntime {
   lastError: string;
   getPlatformInfo(callback: (platformInfo: ChromePlatformInfo) => void): void,
-  onMessageExternal: ChromeOnMessageExternal;
+  onMessageExternal: ChromeOnMessage;
+  onMessage: ChromeOnMessage;
 }
 
 type ChromeStorageItems = { [key:string]: any}
@@ -79,7 +80,7 @@ declare class ChromeMessageSender {
     tlsChanelId: ?string;
 }
 
-declare class ChromeOnMessageExternal {
+declare class ChromeOnMessage {
     addListener: (
         callback: (
             message: Object, sender:ChromeMessageSender, sendResponse: (
@@ -91,6 +92,7 @@ declare class ChromeOnMessageExternal {
 
 declare class ChromeApp {
     runtime: ChromeAppRuntime;   
+    window: ChromeAppWindow;
 }
 
 declare class ChromeAppRuntime {
@@ -107,3 +109,26 @@ declare class ChromeBrowser {
     // according to specification, callback is optional, but in reality it's mandatory (as of now)
     openTab: (options: {url: string}, callback: () => void) => void
 }
+
+type ChromeBoundsSpecification = {
+    left? : number,
+    top? : number,
+    width? : number,
+    height? : number,
+    minWidth?: number,
+    minHeight?: number,
+    maxWidth?: number,
+    maxHeight?: number
+}
+
+declare class ChromeAppWindowOnClosed {
+    addListener: ( callback: () => void ) => void
+}
+
+declare class ChromeAppWindow {
+    create: (url: string, options: {innerBounds: ChromeBoundsSpecification}, callback: (createdWindow: ChromeAppWindow) => void) => void;
+    onClosed: ChromeAppWindowOnClosed;
+}
+
+
+

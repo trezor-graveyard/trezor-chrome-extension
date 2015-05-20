@@ -1,0 +1,73 @@
+<ng-include src="'views/modal/upperheader.html'"></ng-include>
+
+
+<div class="modal-body text-center"
+     ng-switch="code">
+
+  <div ng-switch-when="ButtonRequest_FeeOverThreshold"
+       class="alert alert-block alert-info">
+    <h4>Fee is over threshold.</h4>
+    Please confirm the action on your device.
+  </div>
+
+  <div ng-switch-when="ButtonRequest_ConfirmWord"
+       class="alert alert-block alert-info">
+    <h4>Please write down the recovery seed from your device.</h4>
+  </div>
+
+  <div ng-switch-when="ButtonRequest_Address"
+       class="address-modal">
+    <h5>Check address on TREZOR display</h5>
+    <p class="text-muted">If the address matches your TREZOR display,
+    you can be sure it is genuine.</p>
+    <div class="list-group address-list">
+      <span class="list-group-item address-list-item active">
+        <span class="address-list-index"
+              >/{{address.path[address.path.length-1]}}</span>
+        <span class="address-list-address"
+              >{{address.address}}</span>
+      </span>
+    </div>
+    <div class="address-qr">
+      <qr size="210"
+          text="address.address"
+          correction-level="'M'"
+          type-number="0"
+          input-mode="'8bit'"></qr>
+    </div>
+  </div>
+
+  <div ng-switch-when="ButtonRequest_ProtectCall"
+         class="alert alert-warning alert-withicon alert-lg text-left"
+            ng-if="!(device.features.passphrase_protection) && changing==='passphrase'">
+            <span class="glyphicon glyphicon-warning-sign alert-icon"></span>
+            <h4>Confirm passphrase encryption</h4>
+            <p>
+            If you forget your passphrase, you will lose your coins.
+            </p>
+  </div>
+
+ <div ng-switch-when="ButtonRequest_ProtectCall"
+         class="alert alert-block alert-info"
+            ng-if="(device.features.passphrase_protection) || changing!=='passphrase'"
+        >
+            <h4>Please confirm the action on your device.</h4>
+  </div>
+
+
+
+  <div ng-switch-when="ButtonRequest_WipeDevice"
+       class="alert alert-warning alert-withicon alert-lg text-left">
+    <span class="glyphicon glyphicon-warning-sign alert-icon"></span>
+    <h4>All data on your device will be deleted.</h4>
+    <p>This action cannot be undone. Please <strong>confirm on your
+    device</strong>.</p>
+    <p>Never do this action with TREZOR holding coins unless you have your
+    recovery seed at hand.</p>
+  </div>
+
+  <div ng-switch-default class="alert alert-block alert-info">
+    <h4>Please confirm the action on your device.</h4>
+  </div>
+
+</div>
