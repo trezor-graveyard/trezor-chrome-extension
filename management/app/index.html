@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>TREZOR device management</title>
+    <title>TREZOR management</title>
     <meta name="description" content="myTREZOR Web Wallet">
     <meta name="viewport" content="width=device-width">
     <link rel="chrome-webstore-item" href="https://chrome.google.com/webstore/detail/jcjjhjgimijdkoamemaghajlhegmoclj">
@@ -23,22 +23,24 @@
       to improve your experience.
     </div>
     <![endif]-->
-    <div class="topbar navbar navbar-default">
-      <div class="container">
-        <div class="navbar-header">
-          <div class="navbar-brand" >
-            TREZOR device management
-          </div>
-        </div>
 
-        <ul class="nav navbar-nav navbar-right">
-            <li><a href="https://www.mytrezor.com" target="_blank">visit myTREZOR</a></li>
-        </ul>
-      </div>
-    </div>
     <!-- Webwallet Application -->
     <div id="webwalletApp-container"
          ng-cloak>
+
+      <div class="topbar navbar navbar-default" ng-controller="MainCtrl">
+        <div class="container">
+          <div class="navbar-header">
+            <div class="navbar-brand" >
+              TREZOR management
+            </div>
+          </div>
+  
+          <ul class="nav navbar-nav navbar-right">
+              <li><a href="https://www.mytrezor.com" target="_blank" ng-click="closeApp()">visit myTREZOR</a></li>
+          </ul>
+        </div>
+      </div>
 
       <!-- Error -->
       <div ng-controller="ErrorCtrl"
@@ -166,6 +168,7 @@
     <script src="scripts/controllers/debug.js"></script>
     <script src="scripts/controllers/error.js"></script>
     <script src="scripts/controllers/main.js"></script>
+    <script src="scripts/controllers/navbar.js"></script>
     <script src="scripts/controllers/device/device.js"></script>
     <script src="scripts/controllers/device/info.js"></script>
     <script src="scripts/controllers/device/firmware.js"></script>

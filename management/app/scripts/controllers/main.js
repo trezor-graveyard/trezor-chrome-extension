@@ -10,30 +10,34 @@
  * @see  main.html
  */
 angular.module('webwalletApp').controller('MainCtrl', function (
-    $scope,
-    deviceList,
-    deviceService,
-    udevError,
-    firmwareService) {
+  $scope,
+  deviceList,
+  deviceService,
+  udevError,
+  firmwareService) {
 
-    'use strict';
+  'use strict';
 
-    $scope.isConnected = function () {
-        return deviceList.all().some(
-            function(dev){
-                return dev.isConnected();
-            }
-        );
-    }
+  $scope.closeApp = function () {
+    chrome.app.window.current().close();
+  }
 
-    $scope.isEmpty = function () {
-        return deviceList.count() === 0;
-    }
+  $scope.isConnected = function () {
+    return deviceList.all().some(
+      function (dev) {
+        return dev.isConnected();
+      }
+    );
+  }
 
-    if (!$scope.isEmpty() && !$scope.isConnected()) {
-        var first = (deviceList.all())[0];
-        deviceList.navigateTo(first);
-    }
+  $scope.isEmpty = function () {
+    return deviceList.count() === 0;
+  }
 
-    $scope.udevError = udevError;
+  if (!$scope.isEmpty() && !$scope.isConnected()) {
+    var first = (deviceList.all())[0];
+    deviceList.navigateTo(first);
+  }
+
+  $scope.udevError = udevError;
 });

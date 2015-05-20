@@ -89,31 +89,6 @@
   function acquireTransport(extensionId) {
     var trezor = window.trezor;
 
-    //slightly hacky monkey-patching
-    trezor.ChromeExtensionTransport.prototype._send = function (message) {
-
-      return new Promise(function (resolve, reject) {
-        chrome.runtime.sendMessage(message, {}, function (response) {
-          if (response) {
-            if (response.type === 'response') {
-              // console.log('Response was', response);
-              resolve(response.body);
-            } else if (response.type === 'error') {
-              console.error('[trezor] Error received', response);
-              reject(new Error(response.message));
-            } else {
-              console.error('[trezor] Unknown response type ', response.type);
-              reject(new Error('Unknown response type ' + response.type));
-            }
-          } else {
-            console.error('[trezor] Chrome runtime error', chrome.runtime.lastError);
-            reject(chrome.runtime.lastError);
-          }
-        });
-      });
-
-    };
-
     function loadExtension() {
       return trezor.ChromeExtensionTransport.create(extensionId);
     }
