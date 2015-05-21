@@ -11,7 +11,7 @@
     "angular-qr": "~0.2.0",
     "bootstrap": "~3.2.0",
     "bootstrap-slider": "seiyria/bootstrap-slider#~1.9.0",
-    "trezor.js": "trezor/trezor.js"
+    "trezor.js": "trezor/trezor.js#3.0.1"
   },
   "devDependencies": {},
   "resolutions": {
