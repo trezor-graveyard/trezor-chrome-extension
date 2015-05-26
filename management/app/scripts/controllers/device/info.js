@@ -9,6 +9,7 @@ angular.module('webwalletApp').controller('DeviceInfoCtrl', function (
   selecter,
   modalOpener,
   deviceList,
+  firmwareService,
   $location) {
 
   'use strict';
@@ -28,6 +29,15 @@ angular.module('webwalletApp').controller('DeviceInfoCtrl', function (
   function modalShown(event, code) {
     event.targetScope.changing = $scope._changing;
   }
+
+  $scope.isLatestFirmware = false;
+  firmwareService.check($scope.device.features).then(function(firmware) {
+     if (!firmware) {
+        $scope.isLatestFirmware = true;
+     } else {
+        $scope.isLatestFirmware = false;
+     }
+  });
 
   /**
    * Change device PIN
