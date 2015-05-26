@@ -1,0 +1,25 @@
+<div class="row" >
+
+<div class="jumbotron installers col-md-6 col-md-push-3"><h3>One last step</h3><div><p>Linux users need to do one last step to get started. You can:</p>
+  <ul style="
+      font-size: 21px;
+      ">
+
+          <li> Go to <a href="https://www.mytrezor.com" target="_blank" ng-click="closeApp()">myTREZOR</a> and follow instructions there</li>
+              <li>Alternatively, you can do the following:
+                    <ol class="arabic simple">
+                        <li>Disconect your TREZOR device.</li>
+                        <li>Create new file <cite>/etc/udev/rules.d/51-trezor.rules</cite> in your favourite text editor (root privileges are necessary).</li>
+                        <li>Copy the following two lines, paste them into the file and save it.</li>
+
+                    </ol>
+                    <div style=" margin-top: 15px;  -webkit-user-select: text;">
+                            <pre>SUBSYSTEM=="usb", ATTR{idVendor}=="534c", ATTR{idProduct}=="0001", MODE="0666", GROUP="dialout", SYMLINK+="trezor%n"
+KERNEL=="hidraw*", ATTRS{idVendor}=="534c", ATTRS{idProduct}=="0001",  MODE="0666", GROUP="dialout"</pre>
+                    </div>
+                    <ol class="arabic simple" start="4">
+                        <li>Reconnect your device</li>
+                    </ol>
+                  </li>
+    </ul>
+</div>

@@ -1,0 +1,16 @@
+<div class="row"
+     ng-controller="MainCtrl">
+
+  <div class="jumbotron text-center col-xs-7 col-xs-offset-2"
+       ng-if="isEmpty() && !(udevError.errorStatus)">
+    <p>This app is intended for a simple device management without myTREZOR.</p>
+    
+    <span class="glyphicon-connect-trezor main-connect-icon"></span>
+    
+    <p>Connect your TREZOR to start.</p>
+  </div>
+
+
+</div>
+
+

@@ -1,0 +1,118 @@
+<div ng-controller="DeviceCtrl">
+
+  <div ng-if="!device.isConnected()" class="alert alert-warning">
+    <strong>Please connect your device</strong> to access this section.
+  </div>
+
+  <div ng-controller="DeviceRecoveryCtrl"
+       class="row">
+
+    <fieldset class="col-md-12"
+              ng-show="recovering"
+              ng-disabled="!device.isConnected()">
+      <h4>Seed recovery</h4>
+
+      <div class="alert alert-info">
+        Please follow the instructions on your device.
+        Words are going to be entered in shuffled order.<br/>
+        Also you'll be asked to retype some words that
+        are not part of your recovery seed.
+      </div>
+
+      <form class="form-inline">
+        <div class="form-group">
+
+          <input type="text"
+                 class="form-control input-lg"
+                 ng-if="!wordCallback"
+                 placeholder="Processing..."
+                 disabled>
+
+          <input type="text"
+                 class="input-seedword form-control input-lg"
+                 placeholder="Enter seed word"
+                 ng-model="$parent.seedWord"
+                 ng-if="wordCallback"
+                 focus
+                 typeahead-editable="false"
+                 typeahead-on-select="recoverWord()"
+                 typeahead="word for word in seedWordlist | filter:$viewValue:startsWith | limitTo:10">
+
+          <span ng-if="wordCallback"
+                class="help-block">Confirm choice by pressing enter.</span>
+
+        </div>
+      </form>
+
+      <h5 ng-show="seedWords.length">Recovered seed words:</h5>
+      <ul class="list-group seed-words">
+        <li class="list-group-item"
+            ng-repeat="word in seedWords track by $index">{{word}}</li>
+      </ul>
+    </fieldset>
+
+    <fieldset class="col-md-6"
+              ng-show="!recovering"
+              ng-disabled="!device.isConnected()">
+      <form name="form" class="devrecover">
+
+        <div class="form-group">
+          <label for="label" class="control-label">Device label</label>
+          <input type="text" name="label" id="label" class="form-control"
+                 placeholder="My TREZOR"
+                 ng-model="settings.label">
+        </div>
+
+        <div class="form-group">
+          <label for="word_count" class="control-label"
+            >Number of words in your recovery seed</label>
+          <input type="text" name="word_count" id="word_count"
+                 class="form-control"
+                 slider
+                 data-slider-value="24"
+                 data-slider-min="12"
+                 data-slider-max="24"
+                 data-slider-step="6"
+                 data-slider-tooltip="hide"
+                 ng-model="settings.word_count">
+          <div class="row devsetup-strength">
+            <div class="col-sm-4 text-left">
+              12 words
+            </div>
+            <div class="col-sm-4 text-center">
+              18 words
+            </div>
+            <div class="col-sm-4 text-right">
+              24 words
+            </div>
+          </div>
+        </div>
+
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" name="pin-protection"
+                   ng-model="settings.pin_protection"> Enable PIN protection
+          </label>
+        </div>
+
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" name="passphrase-protection"
+                   ng-model="settings.passphrase_protection"> Additional passphrase encryption
+          </label>
+        </div>
+
+        <div class="form-group">
+          <button class="btn btn-primary"
+                  ng-disabled="!form.$valid"
+                  ng-click="recoverDevice()">Continue</button>
+          <a href="#/device/{{device.id}}"
+             class="btn btn-link">Cancel</a>
+        </div>
+
+      </form>
+    </fieldset>
+
+  </div>
+
+</div>

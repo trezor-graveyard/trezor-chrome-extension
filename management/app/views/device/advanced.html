@@ -1,0 +1,179 @@
+<div ng-controller="DeviceCtrl">
+  <div ng-controller="DeviceInfoCtrl">
+
+    <ng-include src="'views/device/nav.html'"></ng-include>
+
+    <div class="tab-content" ng-hide="device.isEmpty()" >
+
+      <div class="row">
+        <div class="col-xs-2 settings-left">
+          Firmware
+        </div>
+        <div class="col-xs-10 settings-right">
+          {{device.firmwareString()}}
+        </div>
+      </div>
+
+
+
+      <div class="row">
+        <div class="col-xs-2 settings-left">
+          Passphrase
+        </div>
+
+        <!-- Passphrase encryption disabled -->
+        <div class="col-xs-6 settings-right"
+             ng-hide="device.features.passphrase_protection"
+             ng-init="userUnderstandsPassphrase = false">
+          <p>
+            Passphrase encryption allows you to access new wallets,
+            each hidden behind a particular passphrase. Your old
+            accounts will be accessible behind an empty passphrase.
+          </p>
+          <p>
+            <b>If you forget your passphrase, your wallet is lost for
+              good. There is no way to recover your funds.</b>
+          </p>
+          <p>
+            <a href="https://doc.satoshilabs.com/trezor-user/advanced_settings.html#using-passphrase-encrypted-seeds">Read more in user manual</a>
+          </p>
+          <p class="checkbox">
+            <label>
+              <input type="checkbox"
+                     ng-model="userUnderstandsPassphrase">
+              OK, I understand
+            </label>
+          </p>
+          <span tooltip="{{
+                        device.isConnected() ? null : 'Connect the device to enable passphrase.'
+                        }}"
+                tooltip-trigger="mouseenter"
+                tooltip-placement="right"
+                tooltip-append-to-body="true"
+                class="tooltip-trigger">
+            <button class="btn btn-default btn-sm"
+                    ng-click="togglePassphrase(true)"
+                    ng-disabled="!device.isConnected() || !userUnderstandsPassphrase">
+              <span class="glyphicon glyphicon-ok"></span>
+              <span>Enable passphrase encryption</span>
+            </button>
+          </span>
+        </div> <!--/col-xs-6 settings-right-->
+
+        <!-- Passphrase encryption enabled -->
+        <div class="col-xs-6 settings-right"
+             ng-show="device.features.passphrase_protection"
+             ng-init="userUnderstandsPassphrase = false">
+          <p>
+            <b>If you disable the passphrase encryption, your current
+            funds will not appear.</b> You will have to enable the
+            passphrase encryption again to see your current wallet.
+          </p>
+          <p>
+            <a href="https://doc.satoshilabs.com/trezor-user/advanced_settings.html#using-passphrase-encrypted-seeds">Read more in user manual</a>
+          </p>
+          <p class="checkbox">
+            <label>
+              <input type="checkbox"
+                     ng-model="userUnderstandsPassphrase">
+              OK, I understand
+            </label>
+          </p>
+          <span tooltip="{{
+                        device.isConnected() ? null : 'Connect the device to disable passphrase.'
+                        }}"
+                tooltip-trigger="mouseenter"
+                tooltip-placement="right"
+                tooltip-append-to-body="true"
+                class="tooltip-trigger">
+            <button class="btn btn-default btn-sm"
+                    ng-click="togglePassphrase(false)"
+                    ng-disabled="!device.isConnected() || !userUnderstandsPassphrase">
+              <span class="glyphicon glyphicon-remove hidden-xs hidden-sm hidden-md"></span>
+              <span>Disable passphrase encryption</span>
+            </button>
+          </span>
+        </div> <!--/col-xs-6 settings-right-->
+      </div> <!--/row-->
+
+      <hr>
+
+      <!--
+      -  Pin protection
+      -->
+
+      <div class="row" ng-show="device.features.pin_protection" >
+        <div class="col-xs-2 settings-left">
+          Disable PIN
+        </div>
+
+        <div class="col-xs-2 settings-btn"
+             tooltip="{{device.isConnected()?
+                      null
+                      :'Connect the device to disable PIN.'
+                      }}"
+             tooltip-trigger="mouseenter"
+             tooltip-placement="right"
+             tooltip-append-to-body="true">
+          <button class="btn btn-default btn-sm"
+                  ng-click="changePin(true)"
+                  ng-disabled="!device.isConnected()">
+            <span class="glyphicon glyphicon-remove hidden-xs hidden-sm hidden-md"></span>
+            <span>Disable PIN</span>
+          </button>
+        </div>
+      </div>
+      <div class="row"
+           ng-enabled="!device.isConnected()"
+           ng-show="device.features.pin_protection"
+           >
+        <div class="col-xs-2"></div>
+        <p class="text-muted col-xs-6">
+          Using PIN protection is highly recommended. PIN prevents
+          unauthorized persons from stealing your bitcoins even when
+          they get physical access to your device.
+        </p>
+      </div>
+
+      <hr ng-show="device.features.pin_protection">
+
+
+      <!--
+      -  Wipe device
+      -->
+
+
+      <div class="row">
+        <div class="col-xs-2 settings-left">
+          Wipe device
+        </div>
+
+        <div class="col-xs-6 wipe-text">
+          <p>Wiping the device <b>removes all its information.</b></p>
+          <p>Use this feature only if you have your Recovery Seed or
+          you don't have any coins on your device.</p>
+
+          <div ng-controller="DeviceWipeCtrl">
+            <div class="pull-left"
+                 tooltip="{{!device.isConnected() ? 'Device needs to be connected in order to wipe it.' : null}}"
+                 tooltip-trigger="mouseenter"
+                 tooltip-placement="bottom"
+                 tooltip-append-to-body="true">
+
+              <a class="btn btn-danger wipe-button"
+                 href=""
+                 ng-click="wipeDevice()"
+                 ng-disabled="!device.isConnected()">
+                <span class="glyphicon glyphicon-fire"></span>
+                Wipe device
+              </a>
+            </div> <!--/pull-left-->
+          </div> <!--DeviceWipeCtrl-->
+        </div> <!--/col-xs-6-->
+      </div>
+
+    </div> <!--/tab-content-->
+
+  </div> <!--DeviceInfoCtrl-->
+
+</div> <!--DeviceCtrl-->

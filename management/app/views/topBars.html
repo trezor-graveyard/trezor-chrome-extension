@@ -1,0 +1,13 @@
+<!-- Outdated firmware bar -->
+<div ng-controller="FirmwareCtrl">
+    <div class="alert alert-warning alertbar"
+             ng-if="optionalFirmware">
+    <div class="container">
+        <strong>New TREZOR firmware is available.</strong>
+        Upgrade for the newest features and bug fixes.
+        <button class="btn btn-sm btn-warning"
+                ng-click="optionalFirmware.update()">Show details</button>
+    </div>
+    </div>
+</div>
+

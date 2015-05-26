@@ -1,7 +1,9 @@
 {
   "name": "TREZOR Chrome extension",
-  "description": "Chrome extension for communication with Bitcoin TREZOR",
-  "version": "0.1.9",
+  "description": "Chrome extension for Bitcoin TREZOR",
+  "version": "0.2.8",
+  "author": "SatoshiLabs",
+  "short_name": "TREZOR extension",
 
   "manifest_version": 2,
   "minimum_chrome_version": "38.0.2125.7",
@@ -16,22 +18,7 @@
       "scripts": ["index.js"]
     }
   },
-  "externally_connectable": {
-    "matches": [
-      "*://localhost/*",
-      "*://localhost.mytrezor.com/*",
-      "https://mytrezor.com/*",
-      "https://*.mytrezor.com/*",
-      "https://trezor.github.io/*",
-      "https://greenaddress.it/*",
-      "https://*.greenaddress.it/*",
-      "https://coinprism.com/*",
-      "https://*.coinprism.com/*",
-      "https://bitex.la/*", 
-      "https://*.bitex.la/*"
-
-    ]
-  },
+  "externally_connectable": "WILL BE CHANGED BY SCRIPT",
   "permissions": [
     "hid", {
       "usbDevices": [{

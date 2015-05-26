@@ -1,0 +1,12 @@
+<!--This modal is displayed after wipe is done (and user will probably want to wipe the device)-->
+<ng-include src="'views/modal/upperheader.html'"></ng-include>
+<div class="modal-header">
+  <h4 class="modal-title">Wipe finished</h4>
+</div>
+<div class="modal-body">
+  <p class="alert alert-success"
+    ng-if="hideSuccessMsg">Your Trezor was successfully wiped.</p>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-primary" ng-click="$close()">OK</button>
+</div>

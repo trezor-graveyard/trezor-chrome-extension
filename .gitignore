@@ -1,5 +1,10 @@
 *.swp
 config_proto_compiled.js
-extension.zip
 extension/index.js
 node_modules/
+extension/data/
+extension/management/
+extension/manifest.json
+management/app/bower_components/
+management/app/scripts/config.js
+management/dist/

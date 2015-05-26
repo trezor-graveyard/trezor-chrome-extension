@@ -1,0 +1,18 @@
+<ul 
+    class="nav nav-tabs"
+ng-hide="device.isEmpty()" 
+    >
+    <li ng-class="{ active: isActive('/device/{{device.id}}$') }">
+        <a class="btn" href="#/device/{{device.id}}">
+            <span class="glyphicon-trezor"></span> Basic
+        </a>
+    </li>
+
+    <li ng-class="{ active: isActive('/device/{{device.id}}/advanced$') }">
+        <a class="btn" href="#/device/{{device.id}}/advanced">
+            <span class="glyphicon glyphicon-stats"></span> Advanced
+        </a>
+    </li>
+
+
+</ul>
