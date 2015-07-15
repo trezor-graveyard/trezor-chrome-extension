@@ -1,4 +1,4 @@
-TREZOR Chrome extension
+TREZOR Chrome Extension
 ===
 
 Chrome extension for [Bitcoin TREZOR](https://www.bitcointrezor.com/) by [SatoshiLabs](http://satoshilabs.com/).
@@ -6,7 +6,7 @@ Chrome extension for [Bitcoin TREZOR](https://www.bitcointrezor.com/) by [Satosh
 About
 ---
 
-TREZOR Chrome extension has two different purposes.
+TREZOR Chrome Extension has two different purposes.
 
 First, it has a built-in device management functionality, for wiping/recovery/initialization/.... It doesn't connect to any outside sources, all the data (including TREZOR firmware) is bundled with the app, so it works completely offline (if you somehow manage to install Chrome without an internet connection).
 

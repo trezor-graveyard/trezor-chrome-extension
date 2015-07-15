@@ -21,4 +21,3 @@ if (os.environ.get("STORE_BETA") == "1"):
 
 with open('extension/manifest.json', 'w') as outfile:
     json.dump(manifest, outfile, indent=4)
-     
