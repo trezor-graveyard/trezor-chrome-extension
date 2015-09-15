@@ -3,7 +3,7 @@
   "description": "Chrome extension for Bitcoin TREZOR",
   "version": "1.0.0",
   "author": "SatoshiLabs",
-  "short_name": "TREZOR extension",
+  "short_name": "TREZOR Extension",
 
   "manifest_version": 2,
   "minimum_chrome_version": "38.0.2125.7",
