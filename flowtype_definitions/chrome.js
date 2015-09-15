@@ -48,6 +48,7 @@ declare class ChromeRuntime {
   getPlatformInfo(callback: (platformInfo: ChromePlatformInfo) => void): void,
   onMessageExternal: ChromeOnMessage;
   onMessage: ChromeOnMessage;
+  getManifest(): Object;
 }
 
 type ChromeStorageItems = { [key:string]: any}

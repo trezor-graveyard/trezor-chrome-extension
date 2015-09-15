@@ -38,11 +38,13 @@ var messages: ?Messages = null;
 
 var responseFunctions = {
   ping: tasks.ping,
+  version: tasks.version,
   enumerate: tasks.enumerate,
   listen: tasks.listen,
   acquire: tasks.acquire,
   release: tasks.release,
   udevStatus: tasks.udevStatus,
+  version: tasks.version,
 
   call: function (body: MessageToTrezor): Promise<MessageFromTrezor> {
     if (messages == null) {

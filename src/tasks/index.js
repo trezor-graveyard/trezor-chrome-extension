@@ -33,6 +33,7 @@ import {call} from "./call";
 import {configure} from "./configure";
 import {acquire, release} from "./connections";
 import {udevStatus} from "./udevStatus";
+import {version} from "./version";
 import type {Messages} from "../protobuf/messages";
 import type {TrezorDeviceInfo} from "./enumerate";
 
@@ -54,7 +55,8 @@ export var tasks: {
              configure: (signedData: string) => Promise<Messages>,
              release: (connectionId: number) => Promise<string>,
              acquire: (id: number) => Promise<{session: number}> ,
-             udevStatus: () => Promise<string>
+             udevStatus: () => Promise<string>,
+             version: () => Promise<string>
             } = {
     enumerate: enumerate,
     listen: listen,
@@ -64,6 +66,7 @@ export var tasks: {
     configure: configure,
     acquire: acquire,
     release: release,
-    udevStatus: udevStatus
+    udevStatus: udevStatus,
+    version: version
 };
 
