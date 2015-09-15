@@ -43,7 +43,7 @@ function isLinux(): Promise<boolean> {
   return platformInfo().then(function (info) {
     var isLinux = (info.os === "linux");
     cachedIsLinux = isLinux ? 1 : 0;
-    return cachedIsLinux;
+    return isLinux;
   })
 }
 
@@ -91,7 +91,7 @@ export function udevStatus(): Promise<string> {
  * tasks/call.js (only in initialize) and tasks/connections.js (in acquire).
  * @return {Promise} Rejection with the original error
  */
-export function catchUdevError (error: Error): Promise<void> {
+export function catchUdevError (error: Error): Promise {
   var errMessage = error;
   if (errMessage.message !== undefined) {
     errMessage = errMessage.message;

@@ -41,7 +41,7 @@ export function acquire(id: number): Promise<{session: number}> {
     releasePromise = Promise.resolve();
   }
 
-  return releasePromise.then(function () {
+  var res: Promise<{session:number}> = releasePromise.then(function () {
 
     return hid.connect(id);
 
@@ -52,7 +52,12 @@ export function acquire(id: number): Promise<{session: number}> {
     return {
       session: connectionId
     }
-  }).catch(catchUdevError);
+  });
+  // even when we catch udev error, return rejection
+  res.catch(function(error) {
+    return catchUdevError(error);
+  });
+  return res;
 }
 
 export function release(connectionId: number): Promise<string> {

@@ -59,7 +59,7 @@ export function get(key: string): Promise<any> {
  * @param {String} key
  * @param {Object} value Thing to save to the storage
  */
-module.exports.set = function (key:string, value:any): Promise<void> {
+export function set(key:string, value:any): Promise<void> {
   return new Promise(function (resolve, reject) {
     try {
       var obj: {} = {};

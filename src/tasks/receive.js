@@ -57,7 +57,7 @@ class PartiallyParsedInput {
     this.buffer.append(buffer);
   }
   arrayBuffer(): ArrayBuffer {
-    var byteBuffer = this.buffer;
+    var byteBuffer: ByteBuffer = this.buffer;
     byteBuffer.reset();
     return byteBuffer.toArrayBuffer();
   }
@@ -69,24 +69,24 @@ class PartiallyParsedInput {
  * Throws error if something's wrong
  * @param {Uint8Array} bytes Bytes from Trezor
  */
-function parseFirstInput(bytes: Uint8Array): PartiallyParsedInput {
+function parseFirstInput(bytes: ArrayBuffer): PartiallyParsedInput {
 
   // convert to ByteBuffer so it's easier to read
-  var byteBuffer = ByteBuffer.concat([bytes]);
+  var byteBuffer: ByteBuffer = ByteBuffer.concat([bytes]);
 
   // checking first two bytes
-  var sharp1 = byteBuffer.readByte();
-  var sharp2 = byteBuffer.readByte();
+  var sharp1: number = byteBuffer.readByte();
+  var sharp2: number = byteBuffer.readByte();
   if (sharp1 != constants.MESSAGE_HEADER_BYTE || sharp2 != constants.MESSAGE_HEADER_BYTE) {
     throw new Error("Didn't receive expected header signature.");
   }
 
   // reading things from header
-  var type = byteBuffer.readUint16();
-  var length = byteBuffer.readUint32();
+  var type: number = byteBuffer.readUint16();
+  var length: number = byteBuffer.readUint32();
 
   // creating a new buffer with the right size
-  var res = new PartiallyParsedInput(type, length);
+  var res: PartiallyParsedInput = new PartiallyParsedInput(type, length);
   res.append(byteBuffer);
   return res;
 };
@@ -119,8 +119,8 @@ function receiveRest(parsedInput: PartiallyParsedInput, id: number): Promise<voi
  * @returns {int} d.type Message type number
  */
 function receiveBuffer(id: number): Promise<PartiallyParsedInput> {
-  return hid.receive(id).then(function (data) {
-    var partialInput = parseFirstInput(data);
+  return hid.receive(id).then(function (data: ArrayBuffer) {
+    var partialInput: PartiallyParsedInput = parseFirstInput(data);
 
     return receiveRest(partialInput, id).then(function () {
         return partialInput;      
@@ -139,9 +139,9 @@ function receiveBuffer(id: number): Promise<PartiallyParsedInput> {
 export function receive(messages: Messages, id: number): Promise<MessageFromTrezor> {
 
   return receiveBuffer(id).then(function (received) {
-    var typeId = received.typeNumber;
-    var buffer = received.arrayBuffer();
-    var decoder = new MessageDecoder(messages, typeId, buffer);
+    var typeId: number = received.typeNumber;
+    var buffer: ArrayBuffer = received.arrayBuffer();
+    var decoder: MessageDecoder = new MessageDecoder(messages, typeId, buffer);
     return {
       message: decoder.decodedJSON(),
       type: decoder.messageName()
