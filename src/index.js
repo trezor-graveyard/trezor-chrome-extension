@@ -32,6 +32,7 @@ import type {Messages} from "./protobuf/messages";
 
 type MessageToTrezor = {id: ?number, type: ?string, message: Object};
 type MessageFromTrezor = {type: string, message: Object};
+type StatusInfo = {version: string, configured: boolean}
 
 // description of messages, loaded by configure
 // if null -> not configured yet
@@ -39,7 +40,6 @@ var messages: ?Messages = null;
 
 var responseFunctions = {
   ping: tasks.ping,
-  version: tasks.version,
   enumerate: tasks.enumerate,
   listen: tasks.listen,
   acquire: tasks.acquire,
@@ -59,7 +59,16 @@ var responseFunctions = {
     }).then(function (): string {
       return "Success"
     });
-  }
+  },
+
+  info: function(): Promise<StatusInfo> {
+    return tasks.version().then(function (version: string): StatusInfo {
+      return {
+        version: version,
+        configured: messages == null
+      };
+    })
+  },
 }
 
 function handleMessage(request: Object, sender: ChromeMessageSender, sendResponse: (response: Object) => void): boolean {
