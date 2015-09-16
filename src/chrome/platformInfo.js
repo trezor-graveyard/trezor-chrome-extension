@@ -47,7 +47,7 @@ export function platformInfo(): Promise<ChromePlatformInfo> {
 export function manifest(): Promise<Object> {
   return new Promise(function (resolve, reject) {
     try {
-      return chrome.runtime.getManifest();
+      resolve(chrome.runtime.getManifest());
     } catch (e) {
       reject(e);
     }
