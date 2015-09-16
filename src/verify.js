@@ -4,6 +4,7 @@
  *
  * Copyright (C) 2015 SatoshiLabs <info@satoshilabs.com>
  *           (C) 2014 Mike Tsao <mike@sowbug.com>
+ *           (C) 2014 Liz Fong-Jones <lizf@google.com>
  *           (C) 2015 William Wolf <throughnothing@gmail.com>
  *
  * This library is free software: you can redistribute it and/or modify
