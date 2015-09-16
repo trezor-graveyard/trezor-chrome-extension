@@ -69,9 +69,9 @@ License
 
 GPLv3
 
-(C) 2015 SatoshiLabs
-(C) 2014 Mike Tsao <mike@sowbug.com>
-(C) 2014 Liz Fong-Jones <lizf@google.com>
-(C) 2015 William Wolf <throughnothing@gmail.com>
+* (C) 2015 SatoshiLabs
+* (C) 2014 Mike Tsao <mike@sowbug.com>
+* (C) 2014 Liz Fong-Jones <lizf@google.com>
+* (C) 2015 William Wolf <throughnothing@gmail.com>
 
 some code from [sowbug/trhid](https://github.com/sowbug/trhid) and [throughnothing/chrome-trezor](https://github.com/throughnothing/chrome-trezor)
