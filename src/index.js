@@ -35,8 +35,30 @@ type MessageFromTrezor = {type: string, message: Object};
 type StatusInfo = {version: string, configured: boolean}
 
 // description of messages, loaded by configure
-// if null -> not configured yet
+// if null -> either not configured yet, or background page killed/restarted
 var messages: ?Messages = null;
+
+// when we try to read messages and it's null, we look into storage
+// if it's not saved. If it is saved, we try to configure again
+function messagesReload(): Promise<Messages> {
+  if (messages == null) { 
+    return storage.get("savedConfigure").then(function (body: string) {
+      // note - if configure becomes old, this invalidates and fails
+      // but whenever we call "configure" this gets overwritten
+      return tasks.configure(body); 
+    }, function() {
+      return Promise.reject(new Error("No protocol definition, call configure"))
+    }).then(function (_messages) {
+      messages = _messages;
+      return _messages;
+    })
+  } else {
+    return Promise.resolve(messages);
+  }
+
+}
+
+
 
 var responseFunctions = {
   ping: tasks.ping,
@@ -47,14 +69,15 @@ var responseFunctions = {
   udevStatus: tasks.udevStatus,
 
   call: function (body: MessageToTrezor): Promise<MessageFromTrezor> {
-    if (messages == null) {
-      return Promise.reject(new Error("No protocol definition, call configure"))
-    }
-    return tasks.call(body, messages);
+    return messagesReload().then(function (messages: Messages){
+      return tasks.call(body, messages);
+    });
   },
 
   configure: function (body: string): Promise<string> {
-    return tasks.configure(body).then(function (loadedMessages: Messages): void {
+    return storage.set("savedConfigure", body).then(function () {
+      return tasks.configure(body)
+    }).then(function (loadedMessages: Messages): void {
       messages = loadedMessages;
     }).then(function (): string {
       return "Success"
@@ -62,12 +85,20 @@ var responseFunctions = {
   },
 
   info: function(): Promise<StatusInfo> {
-    return tasks.version().then(function (version: string): StatusInfo {
-      return {
-        version: version,
-        configured: messages == null
-      };
+    var hasMessagesP: Promise<boolean> = messagesReload().then( function() {
+      return true;
+    }, function() {
+      return false;
     })
+
+    return hasMessagesP.then(function (hasMessages: boolean) {
+      return tasks.version().then(function (version: string): StatusInfo {
+        return {
+          version: version,
+          configured: hasMessages
+        };
+      });
+    });
   },
 }
 
