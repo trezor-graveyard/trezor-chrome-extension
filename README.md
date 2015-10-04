@@ -33,14 +33,25 @@ Install from source
 git clone --recursive https://github.com/trezor/chrome-extension.git
 ```
 
-###Building
-
-Building was done and tested only on GNU/Linux; it *should* work on OS X.
-
-You need to have [flow](http://flowtype.org) installed for type checking. You also need python3 and npm. (You need to be online for the build.)
+Or, if you already cloned the repository but not the submodules
 
 ```
-make npm-install
+git submodule update --init --recursive
+```
+
+###Building
+
+Building works on OS X and Linux and uses `make`.
+
+You need to have [flow](http://flowtype.org) installed for type checking. If you don't want to install it, edit the `flow-check` in Makefile to something like `true`.
+
+You also need python3 and npm and have them in `$PATH`.
+
+(You need to be online for the build because of `npm install` and `git update` that happen in the build.)
+
+```
+make npm-install # needed only the first time
+make clear # if you built before
 make zip
 ```
 
