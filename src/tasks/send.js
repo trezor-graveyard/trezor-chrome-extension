@@ -67,7 +67,7 @@ class BuiltMessage {
         throw new Error("The message name " + name + " is not found.");
       }
 
-      // cleans up stuff from angular
+      // cleans up stuff from angular and remove "null" that crashes in builder
       cleanupInput(data);
 
       if (data) {
@@ -136,7 +136,7 @@ class BuiltMessage {
 }
 
 
-// Removes $$hashkey from angular
+// Removes $$hashkey from angular and remove nulls
 function cleanupInput(message: Object): void {
   delete message.$$hashKey;
 
@@ -152,6 +152,10 @@ function cleanupInput(message: Object): void {
     }
     if (typeof value === "object") {
       cleanupInput(value);
+    }
+    
+    if (value === null) {
+      delete message[value];
     }
   }
 }
