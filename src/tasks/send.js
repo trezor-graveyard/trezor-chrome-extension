@@ -143,19 +143,23 @@ function cleanupInput(message: Object): void {
   for (var key in message) {
 
     var value = message[key];
-    if (Array.isArray(value)) {
-      value.forEach(function (i) {
-        if (typeof i === "object") {
-          cleanupInput(i);
-        }
-      });
-    }
-    if (typeof value === "object") {
-      cleanupInput(value);
-    }
-    
     if (value === null) {
-      delete message[value];
+      
+      delete message[key];
+    
+    } else {
+      
+      if (Array.isArray(value)) {
+        value.forEach(function (i) {
+          if (typeof i === "object") {
+            cleanupInput(i);
+          }
+        });
+      }
+      if (typeof value === "object") {
+        cleanupInput(value);
+      }
+      
     }
   }
 }
