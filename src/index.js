@@ -114,10 +114,23 @@ var responseFunctions = {
   },
 }
 
+export var currentRunning: Promise = Promise.resolve();
+export var currentRunningPerDevice: {[id: number]: Promise} = {};
+
 function handleMessage(request: Object, sender: ChromeMessageSender, sendResponse: (response: Object) => void): boolean {
 
   if (process.env.NODE_ENV === "debug") {
     console.log("Message arrived: ", request);
+  }
+
+  var currentDeviceP = Promise.resolve();
+  var id: ?number = null;
+
+  if (request.body != null && request.body.id != null) {
+    id = request.body.id;
+    if (currentRunningPerDevice[id] != null) {
+      currentDeviceP = currentRunningPerDevice[id];
+    }
   }
 
   var responseFunction = tasks.none;
@@ -126,15 +139,9 @@ function handleMessage(request: Object, sender: ChromeMessageSender, sendRespons
     responseFunction = responseFunctions[request.type];
   }
 
-  var nonThrowingResponse = function (body) {
-    try {
-      return responseFunction(body);
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  }
-
-  nonThrowingResponse(request.body).then(function (responseBody) {
+  var resp = Promise.all([currentDeviceP, currentRunning]).then(function() {
+    return responseFunction(request.body);
+  }).then(function (responseBody) {
   
     if (process.env.NODE_ENV === "debug") {
       console.log("Response sent: ", responseBody);
@@ -155,7 +162,17 @@ function handleMessage(request: Object, sender: ChromeMessageSender, sendRespons
       message: error.message || error
     });
 
+  }).catch(function (error) {
+    return true; // previous might still return error
   });
+
+  // listen waits for others, but others dont wait for listen
+  if (request.type !== "listen" && request.type !== "enumerate") {
+    if (id != null) {
+      currentRunningPerDevice[id] = resp;
+    }
+    currentRunning = resp;
+  }
 
   // "return true" is necessary for asynchronous message passing,
   // don't remove it!

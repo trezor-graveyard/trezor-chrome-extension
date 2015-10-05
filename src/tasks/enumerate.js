@@ -24,9 +24,10 @@
 'use strict';
 import * as hid from "../chrome/hid";
 import * as connections from "./connections";
-import {call, isCallInProgress} from "./call";
+// import {call, isCallInProgress} from "./call";
 import type {Messages} from "../protobuf/messages.js";
-var _call = call;
+import {currentRunning} from "../index.js";
+// var _call = call;
 
 export class TrezorDeviceInfo {
   path: number;
@@ -75,21 +76,23 @@ function devicesToJSON(devices: Array<ChromeHidDeviceInfo>): Array<TrezorDeviceI
  * @returns {Array.<Object>}
  */
 export function enumerate(messages:Messages): Promise<Array<TrezorDeviceInfo>> {
-  return hid.enumerate().then(function (devices: Array<ChromeHidDeviceInfo>): Promise<Array<TrezorDeviceInfo>> {
+  return currentRunning.then(function(){
+    return hid.enumerate().then(function (devices: Array<ChromeHidDeviceInfo>): Promise<Array<TrezorDeviceInfo>> {
     
     
     /*var converted = devicesToJSON(devices.filter(function(device) {
       return !(disconnected[device.deviceId]);
     }));
     */
-    var converted: Array<TrezorDeviceInfo> = devicesToJSON(devices);
+      var converted: Array<TrezorDeviceInfo> = devicesToJSON(devices);
     
     // Before enumerating, I unfortunately need to call all the devices
     // to find out if they are really alive or if they are dead
     // (the dead ones will go to disconnected object)
     
-    var calledFeatures: Promise = converted.reduce(function(p: Promise, d: TrezorDeviceInfo): Promise{
-      if (d.session != null && !(isCallInProgress(d.session))) {
+      var calledFeatures: Promise = Promise.resolve();
+    /* converted.reduce(function(p: Promise, d: TrezorDeviceInfo): Promise{
+      if (d.session != null / * && !(isCallInProgress(d.session)) * /) {
         return p.then(function(){
           // call will call stopEnumeratingDevice here
           
@@ -97,7 +100,7 @@ export function enumerate(messages:Messages): Promise<Array<TrezorDeviceInfo>> {
             console.log("trying to detect dead one...");
           }
 
-          return _call({id: d.session, type: "Ping", message:{}}, messages).then(function() {
+          return _call({id: d.session, type: "GetFeatures", message:{}}, messages).then(function() {
             if (process.env.NODE_ENV === "debug") {
               console.log("done, working");
             }
@@ -112,12 +115,13 @@ export function enumerate(messages:Messages): Promise<Array<TrezorDeviceInfo>> {
         return p;
       }
     }, Promise.resolve());
-    
-    return calledFeatures.then(function(){
-      return converted.filter(function(device: TrezorDeviceInfo): boolean {
-        return !(disconnected[device.path]);
+    */
+      return calledFeatures.then(function(){
+        return converted.filter(function(device: TrezorDeviceInfo): boolean {
+          return !(disconnected[device.path]);
+        })
       })
-    })
+    });
   });
 }
 

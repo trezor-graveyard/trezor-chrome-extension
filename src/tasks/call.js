@@ -34,12 +34,6 @@ import type {Messages} from "../protobuf/messages.js";
 type MessageToTrezor = {id: ?number, type: ?string, message: Object};
 type MessageFromTrezor = {type: string, message: Object};
 
-var callsInProgress: {[id: number]: boolean} = {};
-var callsInProgressP: {[id: number]: Promise} = {};
-
-export function isCallInProgress(id: number): boolean {
-  return !!callsInProgress[id];
-}
 
 /**
  * Sends a message to Trezor and returns
@@ -63,10 +57,6 @@ export function call(message:MessageToTrezor, messages:Messages): Promise<Messag
   var type: string = message.type;
   var body: Object = message.message;
   
-  callsInProgress[message.id] = true;
-  var afterP = callsInProgressP[id] == null ? Promise.resolve() : callsInProgressP[id];
-
-  var res = afterP.then(function() {
     return send(messages, id, type, body).then(function () {
 
       return receive(messages, id).then(function (response) {
@@ -75,13 +65,11 @@ export function call(message:MessageToTrezor, messages:Messages): Promise<Messag
         return storage.set("afterInstall", "false").then(function() {
           clearUdevError();
             
-          callsInProgress[id] = false;
           return response;
         });
 
       });
     }).catch(function (error) {
-      callsInProgress[id] = false;
         
       var errMessage = error;
       if (errMessage.message !== undefined) {
@@ -108,9 +96,6 @@ export function call(message:MessageToTrezor, messages:Messages): Promise<Messag
         return Promise.reject(error);
       }
     });
-  });
-  callsInProgressP[id] = res.catch(function(e){});
-  return res;
 }
 
 
