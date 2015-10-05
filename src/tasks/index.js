@@ -47,8 +47,8 @@ function ping(): Promise<string> {
 }
 
 export var tasks: {
-             enumerate: () => Promise<Array<TrezorDeviceInfo>>,
-             listen: () => Promise<Array<TrezorDeviceInfo>>, 
+             enumerate: (messages: Messages) => Promise<Array<TrezorDeviceInfo>>,
+             listen: (messages: Messages) => Promise<Array<TrezorDeviceInfo>>, 
              call: (message:{id: ?number, type: ?string, message: Object}, messages:Messages) => 
                                                                     Promise<{type: string, message: Object}>,
              none: () => Promise<void>,

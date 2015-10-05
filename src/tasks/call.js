@@ -24,12 +24,16 @@
 'use strict';
 import {send} from "./send";
 import {receive} from "./receive";
-import {udevStatus, clearUdevError, catchUdevError} from "./udevStatus";
+import {getDevice, release} from "./connections";
+import {catchConnectionError} from "./enumerate";
+
+import {udevStatus, clearUdevError} from "./udevStatus";
 import * as storage from "../chrome/storage";
 import type {Messages} from "../protobuf/messages.js";
 
 type MessageToTrezor = {id: ?number, type: ?string, message: Object};
 type MessageFromTrezor = {type: string, message: Object};
+
 
 /**
  * Sends a message to Trezor and returns
@@ -52,27 +56,26 @@ export function call(message:MessageToTrezor, messages:Messages): Promise<Messag
   var id: number = message.id;
   var type: string = message.type;
   var body: Object = message.message;
+    return send(messages, id, type, body).then(function () {
 
-  return send(messages, id, type, body).then(function () {
+      return receive(messages, id).then(function (response) {
 
-    return receive(messages, id).then(function (response) {
+        // after first back and forth, it's clear that udev is installed => afterInstall is false, error is false
+        return storage.set("afterInstall", "false").then(function() {
+          clearUdevError();
 
-      // after first back and forth, it's clear that udev is installed => afterInstall is false, error is false
-      return storage.set("afterInstall", "false").then(function() {
-        clearUdevError();
+          return response;
+        });
 
-        return response;
       });
-
+    }).catch(function (error) {
+      var device = getDevice(id);
+      if (device != null) {
+        return catchConnectionError(error, device);
+      } else {
+        return Promise.reject(error);
+      }
     });
-  }).catch(function (error) {
-    if (message.type === "Initialize") {
-      return catchUdevError(error);
-    } else {
-      return Promise.reject(error);
-    }
-  });
-
 }
 
 

@@ -24,6 +24,8 @@
 'use strict';
 import * as hid from "../chrome/hid";
 import * as connections from "./connections";
+import type {Messages} from "../protobuf/messages.js";
+import {setCurrentRunning, currentRunning} from "../index.js";
 
 export class TrezorDeviceInfo {
   path: number;
@@ -39,6 +41,9 @@ export class TrezorDeviceInfo {
     this.session = connections.getSession(this.path);
   }
 }
+
+// going around Chrome bug
+var disconnected: {[deviceId: number]: boolean} = {};
 
 
 /**
@@ -62,13 +67,53 @@ function devicesToJSON(devices: Array<ChromeHidDeviceInfo>): Array<TrezorDeviceI
 }
 
 
+
+
 /**
  * Returns devices in JSON form
  * @returns {Array.<Object>}
  */
-export function enumerate(): Promise<Array<TrezorDeviceInfo>> {
-  return hid.enumerate().then(function (devices: Array<ChromeHidDeviceInfo>): Array<TrezorDeviceInfo> {
-    return devicesToJSON(devices);
-  });
+export function enumerate(messages:Messages): Promise<Array<TrezorDeviceInfo>> {
+  var res: Promise = currentRunning.then(function(){
+    return hid.enumerate().then(function (devices: Array<ChromeHidDeviceInfo>): Array<TrezorDeviceInfo> {
+    
+    
+    /*var converted = devicesToJSON(devices.filter(function(device) {
+      return !(disconnected[device.deviceId]);
+    }));
+    */
+    var converted: Array<TrezorDeviceInfo> = devicesToJSON(devices);
+    
+    
+        return converted.filter(function(device: TrezorDeviceInfo): boolean {
+          return !(disconnected[device.path]);
+        })
+    });
+  })
+  setCurrentRunning(res.catch(function(e){}));
+  return res;
 }
 
+function stopEnumeratingDevice(id: number) {
+  disconnected[id] = true;
+}
+
+
+/**
+ * Helper function for catching udev errors. It gets called in
+ * tasks/call.js (only in initialize) and tasks/connections.js (in acquire).
+ * @return {Promise} Rejection with the original error
+ */
+export function catchConnectionError (error: Error, deviceId: number): Promise {
+  var errMessage = error;
+  if (errMessage.message !== undefined) {
+    errMessage = errMessage.message;
+  }
+  // A little heuristics. If error message is one of these and the type of original message is initialization, it's
+  // probably udev error.
+  if (errMessage === "Failed to open HID device." || errMessage === "Transfer failed.") {
+    stopEnumeratingDevice(deviceId);
+  }
+  return Promise.reject(error);
+
+}
