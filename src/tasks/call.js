@@ -24,12 +24,21 @@
 'use strict';
 import {send} from "./send";
 import {receive} from "./receive";
+import {getDevice, release} from "./connections";
+import {stopEnumeratingDevice} from "./enumerate";
+
 import {udevStatus, clearUdevError, catchUdevError} from "./udevStatus";
 import * as storage from "../chrome/storage";
 import type {Messages} from "../protobuf/messages.js";
 
 type MessageToTrezor = {id: ?number, type: ?string, message: Object};
 type MessageFromTrezor = {type: string, message: Object};
+
+var callsInProgress: {[id: number]: boolean} = {};
+
+export function isCallInProgress(id: number): boolean {
+  return !!callsInProgress[id];
+}
 
 /**
  * Sends a message to Trezor and returns
@@ -52,6 +61,9 @@ export function call(message:MessageToTrezor, messages:Messages): Promise<Messag
   var id: number = message.id;
   var type: string = message.type;
   var body: Object = message.message;
+  
+  callsInProgress[message.id] = true;
+  
 
   return send(messages, id, type, body).then(function () {
 
@@ -60,12 +72,34 @@ export function call(message:MessageToTrezor, messages:Messages): Promise<Messag
       // after first back and forth, it's clear that udev is installed => afterInstall is false, error is false
       return storage.set("afterInstall", "false").then(function() {
         clearUdevError();
-
+        
+        callsInProgress[message.id] = false;
         return response;
       });
 
     });
   }).catch(function (error) {
+    callsInProgress[message.id] = false;
+    
+    var errMessage = error;
+    if (errMessage.message !== undefined) {
+      errMessage = errMessage.message;
+    }
+    
+    if (errMessage === "Transfer failed.") {
+      
+      var device = getDevice(id);
+      
+      if (process.env.NODE_ENV === "debug") {
+        console.log("Detected dead TREZOR.", id, device);
+      }
+      
+      if (device != null) {
+        stopEnumeratingDevice(device);
+      }
+      release(id);
+    }
+    
     if (message.type === "Initialize") {
       return catchUdevError(error);
     } else {

@@ -74,3 +74,7 @@ export function getSession(deviceId: number): ?number {
   return connectionsMap[deviceId];
 }
 
+export function getDevice(sessionId: number): ?number {
+  return reverse[sessionId];
+}
+

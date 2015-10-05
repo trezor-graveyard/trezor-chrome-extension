@@ -24,6 +24,8 @@
 'use strict';
 import * as hid from "../chrome/hid";
 import * as connections from "./connections";
+import {call, isCallInProgress} from "./call";
+var _call = call;
 
 export class TrezorDeviceInfo {
   path: number;
@@ -39,6 +41,9 @@ export class TrezorDeviceInfo {
     this.session = connections.getSession(this.path);
   }
 }
+
+// going around Chrome bug
+var disconnected: {[deviceId: number]: boolean} = {};
 
 
 /**
@@ -62,13 +67,47 @@ function devicesToJSON(devices: Array<ChromeHidDeviceInfo>): Array<TrezorDeviceI
 }
 
 
+
+
 /**
  * Returns devices in JSON form
  * @returns {Array.<Object>}
  */
-export function enumerate(): Promise<Array<TrezorDeviceInfo>> {
+export function enumerate(messages:Messages): Promise<Array<TrezorDeviceInfo>> {
   return hid.enumerate().then(function (devices: Array<ChromeHidDeviceInfo>): Array<TrezorDeviceInfo> {
-    return devicesToJSON(devices);
+    
+    
+    /*var converted = devicesToJSON(devices.filter(function(device) {
+      return !(disconnected[device.deviceId]);
+    }));
+    */
+    var converted = devicesToJSON(devices);
+    
+    // Before enumerating, I unfortunately need to call all the devices
+    // to find out if they are really alive or if they are dead
+    // (the dead ones will go to disconnected object)
+    
+    var calledFeatures = converted.reduce(function(p: Promise, d: TrezorDeviceInfo): Promise{
+      if (d.session != null && !(isCallInProgress(d.session))) {
+        return p.then(function(){
+          // call will call stopEnumeratingDevice here
+          return _call({id: d.session, type: "GetFeatures", message:{}}, messages);
+        }).catch(function(e){
+          return true; //intentionally ignoring errors
+        })
+      } else {
+        return p;
+      }
+    }, Promise.resolve());
+    
+    return calledFeatures.then(function(){
+      return converted.filter(function(device: TrezorDeviceInfo): boolean {
+        return !(disconnected[device.path]);
+      })
+    })
   });
 }
 
+export function stopEnumeratingDevice(id: number) {
+  disconnected[id] = true;
+}

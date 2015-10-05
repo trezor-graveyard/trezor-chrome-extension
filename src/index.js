@@ -29,6 +29,8 @@ patch();
 import {tasks} from "./tasks";
 import * as storage from "./chrome/storage";
 import type {Messages} from "./protobuf/messages";
+import type {TrezorDeviceInfo} from "./tasks/enumerate";
+
 
 type MessageToTrezor = {id: ?number, type: ?string, message: Object};
 type MessageFromTrezor = {type: string, message: Object};
@@ -62,11 +64,21 @@ function messagesReload(): Promise<Messages> {
 
 var responseFunctions = {
   ping: tasks.ping,
-  enumerate: tasks.enumerate,
-  listen: tasks.listen,
   acquire: tasks.acquire,
   release: tasks.release,
   udevStatus: tasks.udevStatus,
+
+  enumerate: function(): Promise<Array<TrezorDeviceInfo>> {
+    return messagesReload().then(function (messages: Messages){
+      return tasks.enumerate(messages);
+    })
+  },
+  
+  listen: function(): Promise<Array<TrezorDeviceInfo>> {
+    return messagesReload().then(function (messages: Messages){
+      return tasks.listen(messages);
+    })
+  },
 
   call: function (body: MessageToTrezor): Promise<MessageFromTrezor> {
     return messagesReload().then(function (messages: Messages){

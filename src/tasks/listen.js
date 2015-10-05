@@ -53,14 +53,14 @@ function timeoutPromise(func: Function, delay: number, params: Array<any>): any 
  * @param {string} oldStringified stringified
  * @return {Promise.<Array.<Object>>} List of devices, resolves all the promises
  */
-function runIter(iteration: number, oldStringified: ?string): Promise<Array<TrezorDeviceInfo>> {
-  return enumerate().then(function (devices) {
+function runIter(iteration: number, oldStringified: ?string, messages: Messages): Promise<Array<TrezorDeviceInfo>> {
+  return enumerate(messages).then(function (devices) {
     var stringified = JSON.stringify(devices);
     if ((stringified !== oldStringified) || (iteration === iterMax)) {
       lastStringified = stringified;
       return devices;
     };
-    return timeoutPromise(runIter, delay, [iteration + 1, stringified]);
+    return timeoutPromise(runIter, delay, [iteration + 1, stringified, messages]);
   });
 
 }
@@ -69,7 +69,7 @@ function runIter(iteration: number, oldStringified: ?string): Promise<Array<Trez
  * Function that runs listen
  * @return {Promise.<Array.<Object>>} List of devices, resolves all the promises
  */
-export function listen(): Promise<Array<TrezorDeviceInfo>> {
-  return runIter(0, lastStringified);
+export function listen(messages: Messages): Promise<Array<TrezorDeviceInfo>> {
+  return runIter(0, lastStringified, messages);
 }
 
