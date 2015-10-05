@@ -25,6 +25,7 @@
 import {enumerate} from "./enumerate";
 import * as constants from "../constants";
 import type {TrezorDeviceInfo} from "./enumerate";
+import type {Messages} from "../protobuf/messages.js";
 
 var iterMax: number = constants.LISTEN_ITERS;
 var delay: number = constants.LISTEN_DELAY;

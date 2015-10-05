@@ -35,6 +35,7 @@ type MessageToTrezor = {id: ?number, type: ?string, message: Object};
 type MessageFromTrezor = {type: string, message: Object};
 
 var callsInProgress: {[id: number]: boolean} = {};
+var callsInProgressP: {[id: number]: Promise} = {};
 
 export function isCallInProgress(id: number): boolean {
   return !!callsInProgress[id];
@@ -63,50 +64,53 @@ export function call(message:MessageToTrezor, messages:Messages): Promise<Messag
   var body: Object = message.message;
   
   callsInProgress[message.id] = true;
-  
+  var afterP = callsInProgressP[id] == null ? Promise.resolve() : callsInProgressP[id];
 
-  return send(messages, id, type, body).then(function () {
+  var res = afterP.then(function() {
+    return send(messages, id, type, body).then(function () {
 
-    return receive(messages, id).then(function (response) {
+      return receive(messages, id).then(function (response) {
 
-      // after first back and forth, it's clear that udev is installed => afterInstall is false, error is false
-      return storage.set("afterInstall", "false").then(function() {
-        clearUdevError();
-        
-        callsInProgress[message.id] = false;
-        return response;
+        // after first back and forth, it's clear that udev is installed => afterInstall is false, error is false
+        return storage.set("afterInstall", "false").then(function() {
+          clearUdevError();
+            
+          callsInProgress[id] = false;
+          return response;
+        });
+
       });
-
+    }).catch(function (error) {
+      callsInProgress[id] = false;
+        
+      var errMessage = error;
+      if (errMessage.message !== undefined) {
+        errMessage = errMessage.message;
+      }
+        
+      if (errMessage === "Transfer failed.") {
+        
+        var device = getDevice(id);
+        
+        if (process.env.NODE_ENV === "debug") {
+          console.log("Detected dead TREZOR.", id, device);
+        }
+        
+        if (device != null) {
+          stopEnumeratingDevice(device);
+        }
+        release(id);
+      }
+        
+      if (message.type === "Initialize") {
+        return catchUdevError(error);
+      } else {
+        return Promise.reject(error);
+      }
     });
-  }).catch(function (error) {
-    callsInProgress[message.id] = false;
-    
-    var errMessage = error;
-    if (errMessage.message !== undefined) {
-      errMessage = errMessage.message;
-    }
-    
-    if (errMessage === "Transfer failed.") {
-      
-      var device = getDevice(id);
-      
-      if (process.env.NODE_ENV === "debug") {
-        console.log("Detected dead TREZOR.", id, device);
-      }
-      
-      if (device != null) {
-        stopEnumeratingDevice(device);
-      }
-      release(id);
-    }
-    
-    if (message.type === "Initialize") {
-      return catchUdevError(error);
-    } else {
-      return Promise.reject(error);
-    }
   });
-
+  callsInProgressP[id] = res.catch(function(e){});
+  return res;
 }
 
 

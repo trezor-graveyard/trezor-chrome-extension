@@ -25,6 +25,7 @@
 import * as hid from "../chrome/hid";
 import * as connections from "./connections";
 import {call, isCallInProgress} from "./call";
+import type {Messages} from "../protobuf/messages.js";
 var _call = call;
 
 export class TrezorDeviceInfo {
@@ -74,25 +75,37 @@ function devicesToJSON(devices: Array<ChromeHidDeviceInfo>): Array<TrezorDeviceI
  * @returns {Array.<Object>}
  */
 export function enumerate(messages:Messages): Promise<Array<TrezorDeviceInfo>> {
-  return hid.enumerate().then(function (devices: Array<ChromeHidDeviceInfo>): Array<TrezorDeviceInfo> {
+  return hid.enumerate().then(function (devices: Array<ChromeHidDeviceInfo>): Promise<Array<TrezorDeviceInfo>> {
     
     
     /*var converted = devicesToJSON(devices.filter(function(device) {
       return !(disconnected[device.deviceId]);
     }));
     */
-    var converted = devicesToJSON(devices);
+    var converted: Array<TrezorDeviceInfo> = devicesToJSON(devices);
     
     // Before enumerating, I unfortunately need to call all the devices
     // to find out if they are really alive or if they are dead
     // (the dead ones will go to disconnected object)
     
-    var calledFeatures = converted.reduce(function(p: Promise, d: TrezorDeviceInfo): Promise{
+    var calledFeatures: Promise = converted.reduce(function(p: Promise, d: TrezorDeviceInfo): Promise{
       if (d.session != null && !(isCallInProgress(d.session))) {
         return p.then(function(){
           // call will call stopEnumeratingDevice here
-          return _call({id: d.session, type: "GetFeatures", message:{}}, messages);
+          
+          if (process.env.NODE_ENV === "debug") {
+            console.log("trying to detect dead one...");
+          }
+
+          return _call({id: d.session, type: "Ping", message:{}}, messages).then(function() {
+            if (process.env.NODE_ENV === "debug") {
+              console.log("done, working");
+            }
+          });
         }).catch(function(e){
+          if (process.env.NODE_ENV === "debug") {
+            console.log("done, error");
+          }
           return true; //intentionally ignoring errors
         })
       } else {
