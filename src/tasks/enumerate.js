@@ -26,7 +26,7 @@ import * as hid from "../chrome/hid";
 import * as connections from "./connections";
 // import {call, isCallInProgress} from "./call";
 import type {Messages} from "../protobuf/messages.js";
-import {currentRunning} from "../index.js";
+import {setCurrentRunning, currentRunning} from "../index.js";
 // var _call = call;
 
 export class TrezorDeviceInfo {
@@ -76,7 +76,7 @@ function devicesToJSON(devices: Array<ChromeHidDeviceInfo>): Array<TrezorDeviceI
  * @returns {Array.<Object>}
  */
 export function enumerate(messages:Messages): Promise<Array<TrezorDeviceInfo>> {
-  return currentRunning.then(function(){
+  var res: Promise = currentRunning.then(function(){
     return hid.enumerate().then(function (devices: Array<ChromeHidDeviceInfo>): Promise<Array<TrezorDeviceInfo>> {
     
     
@@ -122,7 +122,9 @@ export function enumerate(messages:Messages): Promise<Array<TrezorDeviceInfo>> {
         })
       })
     });
-  });
+  })
+  setCurrentRunning(res.catch(function(e){}));
+  return res;
 }
 
 export function stopEnumeratingDevice(id: number) {

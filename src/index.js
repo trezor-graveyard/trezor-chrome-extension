@@ -117,6 +117,14 @@ var responseFunctions = {
 export var currentRunning: Promise = Promise.resolve();
 export var currentRunningPerDevice: {[id: number]: Promise} = {};
 
+// enumerate/listen sets currentRunning from enumerate.js
+// because we don't want to block on the whole listen, just
+// on the single enumerate
+export function setCurrentRunning(cur: Promise): Promise {
+  currentRunning = cur;
+  return cur;
+}
+
 function handleMessage(request: Object, sender: ChromeMessageSender, sendResponse: (response: Object) => void): boolean {
 
   if (process.env.NODE_ENV === "debug") {
