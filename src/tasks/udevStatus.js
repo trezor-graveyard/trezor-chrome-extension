@@ -87,21 +87,4 @@ export function udevStatus(): Promise<string> {
   })
 }
 
-/**
- * Helper function for catching udev errors. It gets called in
- * tasks/call.js (only in initialize) and tasks/connections.js (in acquire).
- * @return {Promise} Rejection with the original error
- */
-export function catchUdevError (error: Error): Promise {
-  var errMessage = error;
-  if (errMessage.message !== undefined) {
-    errMessage = errMessage.message;
-  }
-  // A little heuristics. If error message is one of these and the type of original message is initialization, it's
-  // probably udev error.
-  if (errMessage === "Failed to open HID device." || errMessage === "Transfer failed.") {
-    setError(true);
-  }
-  return Promise.reject(error);
 
-}

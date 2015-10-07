@@ -1,7 +1,7 @@
 all: clear zip
 
 flow-check:
-	cd src;# flow check
+	cd src; flow check
 
 clear: 
 	rm -f extension.zip

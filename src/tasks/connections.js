@@ -23,7 +23,7 @@
 
 'use strict';
 import * as hid from "../chrome/hid";
-import {catchUdevError} from "./udevStatus";
+import {catchConnectionError} from "./enumerate";
 
 // global object with deviceId => connectionId mapping
 var connectionsMap: {[keys: number]: number} = {};
@@ -56,7 +56,7 @@ export function acquire(id: number): Promise<{session: number}> {
   });
   // even when we catch udev error, return rejection
   res.catch(function(error) {
-    return catchUdevError(error);
+    return catchConnectionError(error, id);
   });
   return res;
 }

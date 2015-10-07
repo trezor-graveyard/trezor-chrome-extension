@@ -25,9 +25,9 @@
 import {send} from "./send";
 import {receive} from "./receive";
 import {getDevice, release} from "./connections";
-import {stopEnumeratingDevice} from "./enumerate";
+import {catchConnectionError} from "./enumerate";
 
-import {udevStatus, clearUdevError, catchUdevError} from "./udevStatus";
+import {udevStatus, clearUdevError} from "./udevStatus";
 import * as storage from "../chrome/storage";
 import type {Messages} from "../protobuf/messages.js";
 
@@ -70,28 +70,9 @@ export function call(message:MessageToTrezor, messages:Messages): Promise<Messag
 
       });
     }).catch(function (error) {
-        
-      var errMessage = error;
-      if (errMessage.message !== undefined) {
-        errMessage = errMessage.message;
-      }
-        
-      if (errMessage === "Transfer failed.") {
-        
-        var device = getDevice(id);
-        
-        if (process.env.NODE_ENV === "debug") {
-          console.log("Detected dead TREZOR.", id, device);
-        }
-        
-        if (device != null) {
-          stopEnumeratingDevice(device);
-        }
-        release(id);
-      }
-        
-      if (message.type === "Initialize") {
-        return catchUdevError(error);
+      var device = getDevice(id);
+      if (device != null) {
+        return catchConnectionError(error, id);
       } else {
         return Promise.reject(error);
       }
