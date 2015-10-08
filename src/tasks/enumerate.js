@@ -24,10 +24,11 @@
 'use strict';
 import * as hid from "../chrome/hid";
 import * as connections from "./connections";
-// import {call, isCallInProgress} from "./call";
+import {call, canDoCheck} from "./call";
 import type {Messages} from "../protobuf/messages.js";
 import {setCurrentRunning, currentRunning} from "../index.js";
-// var _call = call;
+//var _call = call;
+//var _canDoCheck = canDoCheck;
 
 export class TrezorDeviceInfo {
   path: number;
@@ -84,15 +85,15 @@ export function enumerate(messages:Messages): Promise<Array<TrezorDeviceInfo>> {
       return !(disconnected[device.deviceId]);
     }));
     */
-      var converted: Array<TrezorDeviceInfo> = devicesToJSON(devices);
+    var converted: Array<TrezorDeviceInfo> = devicesToJSON(devices);
     
     // Before enumerating, I unfortunately need to call all the devices
     // to find out if they are really alive or if they are dead
     // (the dead ones will go to disconnected object)
     
-      var calledFeatures: Promise = Promise.resolve();
-    /* converted.reduce(function(p: Promise, d: TrezorDeviceInfo): Promise{
-      if (d.session != null / * && !(isCallInProgress(d.session)) * /) {
+    var calledFeatures: Promise = converted.reduce(function(p: Promise, d: TrezorDeviceInfo): Promise {
+      var canCheck = d.session == null ? false : canDoCheck(d.session);
+      if (d.session != null  && canCheck) {
         return p.then(function(){
           // call will call stopEnumeratingDevice here
           
@@ -100,7 +101,7 @@ export function enumerate(messages:Messages): Promise<Array<TrezorDeviceInfo>> {
             console.log("trying to detect dead one...");
           }
 
-          return _call({id: d.session, type: "GetFeatures", message:{}}, messages).then(function() {
+          return call({id: d.session, type: "GetFeatures", message:{}}, messages).then(function() {
             if (process.env.NODE_ENV === "debug") {
               console.log("done, working");
             }
@@ -115,7 +116,7 @@ export function enumerate(messages:Messages): Promise<Array<TrezorDeviceInfo>> {
         return p;
       }
     }, Promise.resolve());
-    */
+    
       return calledFeatures.then(function(){
         return converted.filter(function(device: TrezorDeviceInfo): boolean {
           return !(disconnected[device.path]);

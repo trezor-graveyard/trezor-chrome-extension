@@ -34,6 +34,20 @@ import type {Messages} from "../protobuf/messages.js";
 type MessageToTrezor = {id: ?number, type: ?string, message: Object};
 type MessageFromTrezor = {type: string, message: Object};
 
+var callInProgress: {[id: number]: boolean} = {}
+var lastResponse: {[id: number]: string} = {}
+
+export function canDoCheck(id: number): boolean {
+  if (callInProgress[id] == null || callInProgress[id] == false) {
+    return true;
+  }
+
+  if (/Request/.test(lastResponse[id])) {
+    return false;
+  }
+
+  return true;
+}
 
 /**
  * Sends a message to Trezor and returns
@@ -56,7 +70,7 @@ export function call(message:MessageToTrezor, messages:Messages): Promise<Messag
   var id: number = message.id;
   var type: string = message.type;
   var body: Object = message.message;
-  
+  callInProgress[id] = true;
     return send(messages, id, type, body).then(function () {
 
       return receive(messages, id).then(function (response) {
@@ -64,15 +78,18 @@ export function call(message:MessageToTrezor, messages:Messages): Promise<Messag
         // after first back and forth, it's clear that udev is installed => afterInstall is false, error is false
         return storage.set("afterInstall", "false").then(function() {
           clearUdevError();
-            
+          callInProgress[id] = false;
+          lastResponse[id] = response.type;
+
           return response;
         });
 
       });
     }).catch(function (error) {
+      callInProgress[id] = false;
       var device = getDevice(id);
       if (device != null) {
-        return catchConnectionError(error, id);
+        return catchConnectionError(error, device);
       } else {
         return Promise.reject(error);
       }
