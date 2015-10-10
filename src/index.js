@@ -114,16 +114,16 @@ var responseFunctions = {
   },
 }
 
-export var currentRunning: Promise = Promise.resolve();
+//export var currentRunning: Promise = Promise.resolve();
 export var currentRunningPerDevice: {[id: number]: Promise} = {};
 
 // enumerate/listen sets currentRunning from enumerate.js
 // because we don't want to block on the whole listen, just
 // on the single enumerate
-export function setCurrentRunning(cur: Promise): Promise {
-  currentRunning = cur;
-  return cur;
-}
+//export function setCurrentRunning(cur: Promise): Promise {
+//  currentRunning = cur;
+//  return cur;
+//}
 
 function handleMessage(request: Object, sender: ChromeMessageSender, sendResponse: (response: Object) => void): boolean {
 
@@ -147,7 +147,7 @@ function handleMessage(request: Object, sender: ChromeMessageSender, sendRespons
     responseFunction = responseFunctions[request.type];
   }
 
-  var resp = Promise.all([currentDeviceP, currentRunning]).then(function() {
+  var resp = Promise.all([currentDeviceP/*, currentRunning*/]).then(function() {
     return responseFunction(request.body);
   }).then(function (responseBody) {
   
@@ -179,7 +179,7 @@ function handleMessage(request: Object, sender: ChromeMessageSender, sendRespons
     if (id != null) {
       currentRunningPerDevice[id] = resp;
     }
-    currentRunning = resp;
+    //currentRunning = resp;
   }
 
   // "return true" is necessary for asynchronous message passing,
