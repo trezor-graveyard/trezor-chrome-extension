@@ -29,24 +29,67 @@ import {catchUdevError} from "./udevStatus";
 var connectionsMap: {[keys: number]: number} = {};
 var reverse: {[keys: number]: number} = {};
 
-export function acquire(id: number): Promise<{session: number}> {
-
-  var releasePromise;
-
-  // "stealing" sessions
-  // if I am already connected (in a different tab for example),
-  // disconnect that one
-  if (connectionsMap[id] != null) {
-    releasePromise = release(connectionsMap[id]);
+function parseAcquireInput(input: any): {
+  id: number,
+  previous: ?number,
+  checkPrevious: boolean
+} {
+  if (typeof input === "number") {
+    return {id: input, previous: null, checkPrevious: false}
+  } else if (typeof input === "object") {
+    var id = input.path;
+    var previous = input.previous;
+    return {id: id, previous: previous, checkPrevious: true};
   } else {
-    releasePromise = Promise.resolve();
+    throw new Error("Wrong acquire input");
   }
+}
 
-  var res: Promise<{session:number}> = releasePromise.then(function () {
+var currentConnectionP: Promise = Promise.resolve();
 
-    return hid.connect(id);
+export function acquire(input: any): Promise<{session: number}> {
 
-  }).then(function (connectionId) {
+  var res: Promise<{session:number}> = currentConnectionP.then(() => {
+
+    var parsedInput = parseAcquireInput(input);
+    var id = parsedInput.id;
+
+    var realPrevious = connectionsMap[id];
+
+    if (parsedInput.checkPrevious) {
+      var error = false;
+      if (realPrevious == null) {
+        if (parsedInput.previous != null) {
+          error = true;
+        }
+      } else {
+        if (parsedInput.previous !== realPrevious) {
+          error = true;
+        }
+      }
+      if (error) {
+        throw new Error("wrong previous session");
+      }
+    }
+
+    var releasePromise;
+
+    // "stealing" sessions
+    // if I am already connected (in a different tab for example),
+    // disconnect that one
+    if (realPrevious != null) {
+      return _realRelease(realPrevious).then(function(){return id;});
+    } else {
+      return Promise.resolve(id);
+    }
+
+  }).then(function (id) {
+    return hid.connect(id).then(function (connectionId) {
+      return {connectionId: connectionId, id: id};
+    });
+  }).then(function (o) {
+    var connectionId = o.connectionId;
+    var id = o.id;
     connectionsMap[id] = connectionId;
     reverse[connectionId] = id;
 
@@ -58,16 +101,29 @@ export function acquire(id: number): Promise<{session: number}> {
   res.catch(function(error) {
     return catchUdevError(error);
   });
+  currentConnectionP = res.catch(function(error) {
+    return;
+  })
   return res;
 }
 
-export function release(connectionId: number): Promise<string> {
+function _realRelease(connectionId: number): Promise<string> {
   return hid.disconnect(connectionId).then(function () {
     var deviceId = reverse[connectionId];
     delete reverse[connectionId];
     delete connectionsMap[deviceId];
     return "Success";
   });
+}
+
+export function release(connectionId: number): Promise<string> {
+  var res = currentConnectionP.then(function() {
+    return _realRelease(connectionId);
+  });
+  currentConnectionP = res.catch(function(error) {
+    return;
+  });
+  return res;
 }
 
 export function getSession(deviceId: number): ?number {

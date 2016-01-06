@@ -28,7 +28,7 @@ import type {TrezorDeviceInfo} from "./enumerate";
 
 var iterMax: number = constants.LISTEN_ITERS;
 var delay: number = constants.LISTEN_DELAY;
-var lastStringified: ?string = null;
+var lastStringified: string = "";
 
 // Helper function for making Promise out of timeout
 // (I am surprised this is not in Promise library already)
@@ -47,13 +47,7 @@ function timeoutPromise(func: Function, delay: number, params: Array<any>): any 
   });
 }
 
-/**
- * Function that runs one iteration of listen and calls itself if there is no change
- * @param {integer} iteration iteration count
- * @param {string} oldStringified stringified
- * @return {Promise.<Array.<Object>>} List of devices, resolves all the promises
- */
-function runIter(iteration: number, oldStringified: ?string): Promise<Array<TrezorDeviceInfo>> {
+function runIter(iteration: number, oldStringified: string): Promise<Array<TrezorDeviceInfo>> {
   return enumerate().then(function (devices) {
     var stringified = JSON.stringify(devices);
     if ((stringified !== oldStringified) || (iteration === iterMax)) {
@@ -62,14 +56,12 @@ function runIter(iteration: number, oldStringified: ?string): Promise<Array<Trez
     };
     return timeoutPromise(runIter, delay, [iteration + 1, stringified]);
   });
-
 }
 
-/**
- * Function that runs listen
- * @return {Promise.<Array.<Object>>} List of devices, resolves all the promises
- */
-export function listen(): Promise<Array<TrezorDeviceInfo>> {
-  return runIter(0, lastStringified);
+// old is a direct input from caller; we cannot really assume anything there
+export function listen(old: ?Object): Promise<Array<TrezorDeviceInfo>> {
+  var oldStringified = JSON.stringify(old);
+  var last = old == null ? lastStringified : oldStringified;
+  return runIter(0, last);
 }
 
