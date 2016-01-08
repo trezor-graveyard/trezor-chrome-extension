@@ -143,7 +143,7 @@ function cleanupInput(message: Object): void {
   for (var key in message) {
 
     var value = message[key];
-    if (value === null) {
+    if (value == null) {
       
       delete message[key];
     
