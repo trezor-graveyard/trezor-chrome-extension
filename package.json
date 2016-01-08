@@ -1,6 +1,6 @@
 {
   "name": "trezor-chrome-extension",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Chrome extension for communication with Trezor",
   "main": "index.js",
   "keywords": [
