@@ -1,6 +1,8 @@
 TREZOR Chrome Extension
 ===
 
+[![Build Status](https://travis-ci.org/trezor/trezor-chrome-extension.svg?branch=master)](https://travis-ci.org/trezor/trezor-chrome-extension)
+
 Chrome extension for [Bitcoin TREZOR](https://www.bitcointrezor.com/) by [SatoshiLabs](http://satoshilabs.com/).
 
 About

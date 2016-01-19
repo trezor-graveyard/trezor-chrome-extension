@@ -33,7 +33,7 @@ management_make:
 	$(MAKE) -C management
 
 manifest:
-	python3 build_manifest.py	
+	python3 build_manifest.py
 
 npm-install:
 	npm install
