@@ -1,7 +1,7 @@
 import json
 import os
 
-with open('trezor-common/signer/config.json') as data_file:    
+with open('trezor-common/signer/config.json') as data_file:
     data = json.load(data_file)
 
 whitelist = data["whitelist_urls"]
@@ -13,7 +13,9 @@ def fix(url):
 with open('manifest_no_matches.json') as data_file:
     manifest = json.load(data_file)
 
-manifest["externally_connectable"] = {"matches": list(map(fix, whitelist))}
+trezor_guard_ids = ["imloifkgjagghnncjkhggdhalmcnfklk", "niebkpllfhmpfbffbfifagfgoamhpflf"]
+
+manifest["externally_connectable"] = {"matches": list(map(fix, whitelist)), "ids": trezor_guard_ids}
 
 if (os.environ.get("STORE_BETA") == "1"):
     manifest["name"] = "BETA - TREZOR Chrome Extension"
