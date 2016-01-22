@@ -49,6 +49,7 @@ declare class ChromeRuntime {
   onMessageExternal: ChromeOnMessage;
   onMessage: ChromeOnMessage;
   getManifest(): Object;
+  id: string;
 }
 
 type ChromeStorageItems = { [key:string]: any}
