@@ -1,6 +1,6 @@
 {
   "name": "TREZOR Chrome Extension",
-  "description": "Chrome extension for Bitcoin TREZOR",
+  "description": "Chrome extension for TREZOR",
   "version": "1.0.7",
   "author": "SatoshiLabs",
   "short_name": "TREZOR Extension",
