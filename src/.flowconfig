@@ -1,4 +1,6 @@
 [ignore]
+.*/node_modules/protobufjs/src/.*
+
 
 [include]
 ../node_modules/protobufjs/*
