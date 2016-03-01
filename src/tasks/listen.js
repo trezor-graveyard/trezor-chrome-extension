@@ -25,6 +25,7 @@
 import {enumerate} from "./enumerate";
 import * as constants from "../constants";
 import type {TrezorDeviceInfo} from "./enumerate";
+var stringify = require('json-stable-stringify');
 
 var iterMax: number = constants.LISTEN_ITERS;
 var delay: number = constants.LISTEN_DELAY;
@@ -49,7 +50,7 @@ function timeoutPromise(func: Function, delay: number, params: Array<any>): any 
 
 function runIter(iteration: number, oldStringified: string): Promise<Array<TrezorDeviceInfo>> {
   return enumerate().then(function (devices) {
-    var stringified = JSON.stringify(devices);
+    var stringified = stringify(devices);
     if ((stringified !== oldStringified) || (iteration === iterMax)) {
       lastStringified = stringified;
       return devices;
@@ -60,7 +61,7 @@ function runIter(iteration: number, oldStringified: string): Promise<Array<Trezo
 
 // old is a direct input from caller; we cannot really assume anything there
 export function listen(old: ?Object): Promise<Array<TrezorDeviceInfo>> {
-  var oldStringified = JSON.stringify(old);
+  var oldStringified = stringify(old);
   var last = old == null ? lastStringified : oldStringified;
   return runIter(0, last);
 }

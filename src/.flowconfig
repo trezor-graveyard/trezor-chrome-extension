@@ -3,11 +3,12 @@
 
 
 [include]
-../node_modules/protobufjs/*
-../node_modules/lodash/*
-../node_modules/bitcoinjs-lib/*
 ../node_modules/bigi/*
+../node_modules/bitcoinjs-lib/*
 ../node_modules/ecurve/*
+../node_modules/json-stable-stringify/*
+../node_modules/lodash/*
+../node_modules/protobufjs/*
 
 
 [libs]
