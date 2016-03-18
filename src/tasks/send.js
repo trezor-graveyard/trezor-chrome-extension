@@ -119,7 +119,7 @@ class BuiltMessage {
     var size: number = constants.BUFFER_SIZE;
 
     // How many pieces will there actually be
-    var count: number = Math.round((bytes.length - 1) / size) + 1;
+    var count: number = Math.floor((bytes.length - 1) / size) + 1;
 
     // slice and dice 
     for (var i = 0; i < count; i++) {
