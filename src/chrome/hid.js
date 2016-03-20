@@ -25,6 +25,7 @@
 'use strict';
 
 import * as constants from '../constants.js';
+import type {ChromeHidDeviceInfo} from 'chromeApi';
 
 
 /**

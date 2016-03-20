@@ -21,6 +21,8 @@
 
 'use strict';
 
+import type {ChromePlatformInfo} from 'chromeApi';
+
 //encapsulating chrome's platform info into Promise API
 export function platformInfo(): Promise<ChromePlatformInfo> {
   return new Promise(function (resolve, reject) {

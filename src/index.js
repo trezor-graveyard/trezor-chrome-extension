@@ -29,6 +29,7 @@ patch();
 import {tasks} from "./tasks";
 import * as storage from "./chrome/storage";
 import type {Messages} from "./protobuf/messages";
+import type {ChromeMessageSender} from 'chromeApi';
 
 type MessageToTrezor = {id: ?number, type: ?string, message: Object};
 type MessageFromTrezor = {type: string, message: Object};
