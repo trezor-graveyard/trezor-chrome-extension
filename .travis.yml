@@ -11,7 +11,7 @@ node_js:
   - "4.0"
 
 before_script:
-  - npm install -g flow-bin
+  - npm install -g flow-bin eslint eslint-plugin-flow-vars babel-eslint@6.0.0-beta.6 eslint-plugin-standard eslint-plugin-promise
 
 script:
   - make zip
