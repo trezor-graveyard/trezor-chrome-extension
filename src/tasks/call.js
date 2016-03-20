@@ -24,6 +24,7 @@
 "use strict";
 import {send} from "./send";
 import {receive} from "./receive";
+import * as connections from "./connections";
 import {clearUdevError, catchUdevError} from "./udevStatus";
 import * as storage from "../chrome/storage";
 import type {Messages} from "../protobuf/messages.js";
@@ -46,7 +47,7 @@ export function call(message: MessageToTrezor, messages: Messages): Promise<Mess
   const type: string = message.type;
   const body: Object = message.message;
 
-  return send(messages, id, type, body).then(() => {
+  const res = send(messages, id, type, body).then(() => {
     return receive(messages, id).then((response) => {
       // after first back and forth, it's clear that udev is installed => afterInstall is false, error is false
       return storage.set("afterInstall", "false").then(() => {
@@ -61,5 +62,14 @@ export function call(message: MessageToTrezor, messages: Messages): Promise<Mess
     } else {
       return Promise.reject(error);
     }
+  });
+
+  // I want to immediately reject on releasing
+  return Promise.race([res, rejectOnRelease(id)]);
+}
+
+function rejectOnRelease(id: number): Promise {
+  return new Promise((resolve, reject) => {
+    connections.doOnRelease(id, () => reject(new Error("Device released or disconnected.")));
   });
 }

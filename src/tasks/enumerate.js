@@ -60,7 +60,10 @@ function devicesToJSON(devices: Array<ChromeHidDeviceInfo>): Array<TrezorDeviceI
 
 // Returns devices in JSON form
 export function enumerate(): Promise<Array<TrezorDeviceInfo>> {
-  return hid.enumerate().then((devices: Array<ChromeHidDeviceInfo>): Array<TrezorDeviceInfo> => {
-    return devicesToJSON(devices);
+  return connections.lockConnection(() => {
+    return hid.enumerate().then((devices: Array<ChromeHidDeviceInfo>): Array<TrezorDeviceInfo> => {
+      connections.releaseDisconnected(devices);
+      return devicesToJSON(devices);
+    });
   });
 }

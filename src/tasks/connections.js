@@ -24,10 +24,11 @@
 "use strict";
 import * as hid from "../chrome/hid";
 import {catchUdevError} from "./udevStatus";
+import type {ChromeHidDeviceInfo} from "chromeApi";
 
 // global object with deviceId => connectionId mapping
-const connectionsMap: {[keys: number]: number} = {};
-const reverse: {[keys: number]: number} = {};
+const connectionsMap: {[keys: string]: number} = {};
+const reverse: {[keys: string]: number} = {};
 
 function parseAcquireInput(input: any): {
   id: number,
@@ -45,75 +46,113 @@ function parseAcquireInput(input: any): {
   }
 }
 
-let currentConnectionP: Promise = Promise.resolve();
+let currentP: Promise = Promise.resolve();
 
-export function acquire(input: any): Promise<{session: number}> {
-  const res: Promise<{session:number}> = currentConnectionP.then(() => {
-    const parsedInput = parseAcquireInput(input);
-    const id = parsedInput.id;
-
-    const realPrevious = connectionsMap[id];
-
-    if (parsedInput.checkPrevious) {
-      let error = false;
-      if (realPrevious == null) {
-        if (parsedInput.previous != null) {
-          error = true;
-        }
-      } else {
-        if (parsedInput.previous !== realPrevious) {
-          error = true;
-        }
-      }
-      if (error) {
-        throw new Error("wrong previous session");
-      }
-    }
-
-    // "stealing" sessions
-    // if I am already connected (in a different tab for example),
-    // disconnect that one
-    if (realPrevious != null) {
-      return _realRelease(realPrevious).then(() => id);
-    } else {
-      return Promise.resolve(id);
-    }
-  }).then((id) =>
-    hid.connect(id).then((connectionId) => {
-      return {connectionId, id};
-    })
-  ).then((o) => {
-    const connectionId = o.connectionId;
-    const id = o.id;
-    connectionsMap[id] = connectionId;
-    reverse[connectionId] = id;
-
-    return {
-      session: connectionId,
-    };
-  });
-  // even when we catch udev error, return rejection
-  res.catch((error) => catchUdevError(error));
-  currentConnectionP = res.catch(() => true);
+export function lockConnection<X>(fn: () => Promise<X>): Promise<X> {
+  const res = currentP.then(() => fn());
+  currentP = res.catch(() => true);
   return res;
 }
+
+export function acquire(input: any): Promise<{session: number}> {
+  return lockConnection(() => {
+    return Promise.resolve().then(() => {
+      const parsedInput = parseAcquireInput(input);
+      const id = parsedInput.id;
+
+      const realPrevious = connectionsMap[id.toString()];
+
+      if (parsedInput.checkPrevious) {
+        let error = false;
+        if (realPrevious == null) {
+          if (parsedInput.previous != null) {
+            error = true;
+          }
+        } else {
+          if (parsedInput.previous !== realPrevious) {
+            error = true;
+          }
+        }
+        if (error) {
+          throw new Error("wrong previous session");
+        }
+      }
+
+      // "stealing" sessions
+      // if I am already connected (in a different tab for example),
+      // disconnect that one
+      if (realPrevious != null) {
+        return _realRelease(realPrevious).then(() => id);
+      } else {
+        return Promise.resolve(id);
+      }
+    }).then((id) =>
+      hid.connect(id).then((connectionId) => {
+        return {connectionId, id};
+      })
+    ).then((o) => {
+      const connectionId: number = o.connectionId;
+      const id: number = o.id;
+      connectionsMap[id.toString()] = connectionId;
+      reverse[connectionId.toString()] = id;
+
+      return {
+        session: connectionId,
+      };
+    }).catch((error) =>
+      // note: this re-rejects with the same error always
+      catchUdevError(error)
+    );
+  });
+}
+
+const onRelease: {[connectionId: string]: Array<() => void>} = {};
 
 function _realRelease(connectionId: number): Promise<string> {
   return hid.disconnect(connectionId).then(() => {
-    const deviceId = reverse[connectionId];
-    delete reverse[connectionId];
-    delete connectionsMap[deviceId];
-    return "Success";
+    return releaseCleanup(connectionId);
   });
 }
 
+function releaseCleanup(connectionId: number): string {
+  const connectionIdStr: string = connectionId.toString();
+  const deviceIdStr = reverse[connectionIdStr].toString();
+  delete reverse[connectionIdStr];
+  delete connectionsMap[deviceIdStr];
+  if (onRelease[connectionIdStr] != null) {
+    onRelease[connectionIdStr].forEach(fun => fun());
+  }
+  delete onRelease[connectionIdStr];
+  return "Success";
+}
+
+export function releaseDisconnected(devices: Array<ChromeHidDeviceInfo>) {
+  const connected = {};
+  devices.forEach(device => {
+    connected[device.deviceId.toString()] = true;
+  });
+  Object.keys(connectionsMap).forEach((deviceId: string) => {
+    if (connected[deviceId] == null) {
+      if (connectionsMap[deviceId] != null) {
+        releaseCleanup(connectionsMap[deviceId]);
+      }
+    }
+  });
+}
+
+export function doOnRelease(connectionId: number, fun: () => void) {
+  const id = connectionId.toString();
+  if (onRelease[id] == null) {
+    onRelease[id] = [];
+  }
+  onRelease[id].push(fun);
+}
+
 export function release(connectionId: number): Promise<string> {
-  const res = currentConnectionP.then(() => _realRelease(connectionId));
-  currentConnectionP = res.catch(() => true);
-  return res;
+  return lockConnection(() => _realRelease(connectionId));
 }
 
 export function getSession(deviceId: number): ?number {
-  return connectionsMap[deviceId];
+  return connectionsMap[deviceId.toString()];
 }
 
