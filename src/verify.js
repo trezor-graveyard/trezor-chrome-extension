@@ -21,64 +21,52 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-'use strict';
+"use strict";
 
-/**
- * Module for verifying ECDSA signature of configuration.
- *
- * Keys are loaded (by node at compile time) from ../constants.js
- */
- 
+// Module for verifying ECDSA signature of configuration.
+// Keys are loaded (by node at compile time) from ../constants.js
+
 import {ecdsa, ECSignature, ECPubKey, crypto} from "bitcoinjs-lib";
 
 import * as BigInteger from "bigi";
 import * as ecurve from "ecurve";
 
-var curve = ecurve.getCurveByName('secp256k1')
+const curve = ecurve.getCurveByName("secp256k1");
 
-import * as constants from './constants.js';
+import * as constants from "./constants.js";
 
-var keys: Array<Buffer> = constants.SATOSHI_KEYS
+const keys: Array<Buffer> = constants.SATOSHI_KEYS
   .map(key => {
-    return new Buffer(key, 'binary');
+    return new Buffer(key, "binary");
   });
 
-
-/**
- * Verifies ECDSA signature
- * @param {Array[Buffer]} pubkeys Public keys
- * @param {Array[Buffer]} signature ECDSA signature (concatenated R and S, both 32 bytes)
- * @param {Array[Buffer]} data Data that are signed
- * @returns {boolean} True, iff the signature is correct with any of the pubkeys
- */
+// Verifies ECDSA signature
+// pubkeys - Public keys
+// signature - ECDSA signature (concatenated R and S, both 32 bytes)
+// data - Data that are signed
+// returns True, iff the signature is correct with any of the pubkeys
 function verify(pubkeys: Array<Buffer>, bsignature: Buffer, data: Buffer): boolean {
-  var r = BigInteger.fromBuffer(bsignature.slice(0, 32))
-  var s = BigInteger.fromBuffer(bsignature.slice(32))
-  var signature = new ECSignature(r, s)
+  const r = BigInteger.fromBuffer(bsignature.slice(0, 32));
+  const s = BigInteger.fromBuffer(bsignature.slice(32));
+  const signature = new ECSignature(r, s);
 
-  var hash = crypto.sha256(data);
+  const hash = crypto.sha256(data);
 
   return pubkeys.some(pubkey => {
-
-    var Q = ECPubKey.fromBuffer(pubkey).Q;
+    const Q = ECPubKey.fromBuffer(pubkey).Q;
     return ecdsa.verify(curve, hash, signature, Q);
-
   });
 }
 
-/**
- * Verifies if a given data is a correctly signed config
- * @param {string} data Data in hexadecimal that is signature plus the data
- * @returns {Promise.<Buffer, error>} The data, if correctly signed, else reject
- */
+// Verifies if a given data is a correctly signed config
+// Returns the data, if correctly signed, else reject
 export function verifyHexBin(data: string): Promise<Buffer> {
-  var signature = new Buffer(data.slice(0, 64 * 2), 'hex');
-  var dataB = new Buffer(data.slice(64 * 2), 'hex');
-  var verified = verify(keys, signature, dataB);
+  const signature = new Buffer(data.slice(0, 64 * 2), "hex");
+  const dataB = new Buffer(data.slice(64 * 2), "hex");
+  const verified = verify(keys, signature, dataB);
   if (!verified) {
     return Promise.reject("Not correctly signed.");
   } else {
     return Promise.resolve(dataB);
   }
 }
-

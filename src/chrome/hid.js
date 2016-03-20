@@ -21,142 +21,110 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+"use strict";
 
-'use strict';
+import * as constants from "../constants.js";
+import type {ChromeHidDeviceInfo} from "chromeApi";
 
-import * as constants from '../constants.js';
-import type {ChromeHidDeviceInfo} from 'chromeApi';
-
-
-/**
- * Enumerates trezors.
- * @returns {Promise.<Array.<HidDeviceInfo>>} devices
- */
+// Enumerates trezors.
 export function enumerate(): Promise<Array<ChromeHidDeviceInfo>> {
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     try {
-
       chrome.hid.getDevices(
         constants.TREZOR_DESC,
-        function (devices: Array<ChromeHidDeviceInfo>): void {
+        (devices: Array<ChromeHidDeviceInfo>): void => {
           if (chrome.runtime.lastError) {
             reject(chrome.runtime.lastError);
           } else {
             resolve(devices);
           }
-
         }
       );
-
     } catch (e) {
       reject(e);
     }
   });
 }
 
-
-/**
- * Sends buffer to Trezor.
- *
- * A "low level" API; doesn't know about messages etc.
- * @param {integer} id ConnectionId of Trezor (returned by chrome.hid.connect)
- * @param {ArrayBuffer} data Raw data to push to trezor.
- * @return {Promise} Resolves iff the data is successfully pushed
- */
+// Sends buffer to Trezor.
+// A "low level" API; doesn't know about messages etc.
 export function send(id: number, data: ArrayBuffer): Promise<void> {
   if (id == null) {
     Promise.reject("No ID to hid.send");
   }
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     try {
-
-      chrome.hid.send(id, constants.REPORT_ID, data, function () {
+      chrome.hid.send(id, constants.REPORT_ID, data, () => {
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError);
         } else {
-          resolve(undefined); //bug in flow...
+          resolve();
         }
       });
-
     } catch (e) {
       reject(e);
     }
-  })
+  });
 }
 
-/**
- * Recieves buffer from Trezor.
- *
- * A "low level" API; doesn't know about messages etc.
- * @param {integer} id ConnectionId of Trezor (returned by chrome.hid.connect)
- * @returns {Promise.<ArrayBuffer>} Raw data from trezor, or rejected if error
- */
+// Recieves buffer from Trezor.
+// A "low level" API; doesn't know about messages etc.
 export function receive(id: number): Promise<ArrayBuffer> {
   if (id == null) {
     Promise.reject("No ID to hid.receive");
   }
 
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     try {
-
-      chrome.hid.receive(id, function (reportId: number, data: ArrayBuffer) {
+      chrome.hid.receive(id, (reportId: number, data: ArrayBuffer) => {
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError);
         } else {
           resolve(data);
         }
       });
-
     } catch (e) {
       reject(e);
     }
   });
-};
+}
 
-/**
- * Connects to the Trezor.
- * @param {integer} id Device ID that chrome gives me
- * @return {Promise.<integer>} Connection ID of the device. It is *different* from the device ID!
- */
+// Connects to the Trezor.
+// Returns connection id (different from device ID)
 export function connect(id: number): Promise<number> {
   if (id == null) {
     Promise.reject("No ID to hid.connect");
   }
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     try {
-      chrome.hid.connect(id, function (connection) {
+      chrome.hid.connect(id, (connection) => {
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError);
         } else {
           resolve(connection.connectionId);
         }
       });
-
     } catch (e) {
       reject(e);
     }
   });
-};
+}
 
-/**
- * Connects to the Trezor.
- * @param {integer} id Connection ID (*not* device ID!)
- * @return {Promise} Resolves on success, resolves to nothing
- */
+// Disconnects from trezor.
+// First parameter is connection ID (*not* device ID!)
 export function disconnect(id: number): Promise<void> {
   if (id == null) {
     Promise.reject("No ID to hid.disconnect");
   }
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     try {
-      chrome.hid.disconnect(id, function () {
+      chrome.hid.disconnect(id, () => {
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError);
         } else {
-          resolve(undefined); //bug in flow...
+          resolve(undefined); // bug in flow...
         }
       });
-
     } catch (e) {
       reject(e);
     }

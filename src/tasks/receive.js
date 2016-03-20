@@ -21,13 +21,10 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-'use strict';
+"use strict";
 
-/**
- * Logic of recieving data from trezor
- *
- * Logic of "call" is broken to two parts - sending and recieving
- */
+// Logic of recieving data from trezor
+// Logic of "call" is broken to two parts - sending and recieving
 
 import * as hid from "../chrome/hid";
 import * as constants from "../constants.js";
@@ -58,7 +55,7 @@ class PartiallyParsedInput {
     this.buffer.append(buffer);
   }
   arrayBuffer(): ArrayBuffer {
-    var byteBuffer: ByteBuffer = this.buffer;
+    const byteBuffer: ByteBuffer = this.buffer;
     byteBuffer.reset();
     return byteBuffer.toArrayBuffer();
   }
@@ -71,37 +68,34 @@ class PartiallyParsedInput {
  * @param {Uint8Array} bytes Bytes from Trezor
  */
 function parseFirstInput(bytes: ArrayBuffer): PartiallyParsedInput {
-
   // convert to ByteBuffer so it's easier to read
-  var byteBuffer: ByteBuffer = ByteBuffer.concat([bytes]);
+  const byteBuffer: ByteBuffer = ByteBuffer.concat([bytes]);
 
   // checking first two bytes
-  var sharp1: number = byteBuffer.readByte();
-  var sharp2: number = byteBuffer.readByte();
-  if (sharp1 != constants.MESSAGE_HEADER_BYTE || sharp2 != constants.MESSAGE_HEADER_BYTE) {
+  const sharp1: number = byteBuffer.readByte();
+  const sharp2: number = byteBuffer.readByte();
+  if (sharp1 !== constants.MESSAGE_HEADER_BYTE || sharp2 !== constants.MESSAGE_HEADER_BYTE) {
     throw new Error("Didn't receive expected header signature.");
   }
 
   // reading things from header
-  var type: number = byteBuffer.readUint16();
-  var length: number = byteBuffer.readUint32();
+  const type: number = byteBuffer.readUint16();
+  const length: number = byteBuffer.readUint32();
 
   // creating a new buffer with the right size
-  var res: PartiallyParsedInput = new PartiallyParsedInput(type, length);
+  const res: PartiallyParsedInput = new PartiallyParsedInput(type, length);
   res.append(byteBuffer);
   return res;
-};
-
+}
 
 // If the whole message wasn't loaded in the first input, loads more inputs until everything is loaded.
 // note: the return value is not at all important since it's still the same parsedinput
 function receiveRest(parsedInput: PartiallyParsedInput, id: number): Promise<void> {
-
   if (parsedInput.isDone()) {
-    return Promise.resolve(undefined); //flow bug
+    return Promise.resolve(undefined); // flow bug
   }
 
-  return hid.receive(id).then(function (data) {
+  return hid.receive(id).then((data) => {
     // sanity check
     if (data == null) {
       throw new Error("Received no data.");
@@ -120,11 +114,11 @@ function receiveRest(parsedInput: PartiallyParsedInput, id: number): Promise<voi
  * @returns {int} d.type Message type number
  */
 function receiveBuffer(id: number): Promise<PartiallyParsedInput> {
-  return hid.receive(id).then(function (data: ArrayBuffer) {
-    var partialInput: PartiallyParsedInput = parseFirstInput(data);
+  return hid.receive(id).then((data: ArrayBuffer) => {
+    const partialInput: PartiallyParsedInput = parseFirstInput(data);
 
-    return receiveRest(partialInput, id).then(function () {
-        return partialInput;      
+    return receiveRest(partialInput, id).then(() => {
+      return partialInput;
     });
   });
 }
@@ -138,16 +132,13 @@ function receiveBuffer(id: number): Promise<PartiallyParsedInput> {
  * @returns {string} res.type Message name
  */
 export function receive(messages: Messages, id: number): Promise<MessageFromTrezor> {
-
-  return receiveBuffer(id).then(function (received) {
-    var typeId: number = received.typeNumber;
-    var buffer: ArrayBuffer = received.arrayBuffer();
-    var decoder: MessageDecoder = new MessageDecoder(messages, typeId, buffer);
+  return receiveBuffer(id).then((received) => {
+    const typeId: number = received.typeNumber;
+    const buffer: ArrayBuffer = received.arrayBuffer();
+    const decoder: MessageDecoder = new MessageDecoder(messages, typeId, buffer);
     return {
       message: decoder.decodedJSON(),
-      type: decoder.messageName()
+      type: decoder.messageName(),
     };
   });
 }
-
-

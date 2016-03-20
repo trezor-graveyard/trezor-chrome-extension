@@ -38,13 +38,13 @@ export class Messages {
   constructor(messages: MessageArray<string>) {
     this.messagesByName = messages;
 
-    var messagesByType: MessageArray<number> = {};
+    const messagesByType: MessageArray<number> = {};
     _.keys(messages.MessageType).forEach(longName => {
-      var typeId = messages.MessageType[longName];
-      var shortName = longName.split('_')[1];
+      const typeId = messages.MessageType[longName];
+      const shortName = longName.split("_")[1];
       messagesByType[typeId] = {
         name: shortName,
-        constructor: messages[shortName]
+        constructor: messages[shortName],
       };
     });
     this.messagesByType = messagesByType;

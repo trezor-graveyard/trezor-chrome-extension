@@ -21,46 +21,42 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-'use strict';
+"use strict";
 
-/**
- * Helper module that does conversion from already parsed protobuf's
- * FileDescriptorSet to JSON, that can be used to initialize ProtoBuf.js
- *
- * Theoretically this should not be necessary, since FileDescriptorSet is protobuf "native" description,
- * but ProtoBuf.js does NOT know how to make Builder from FileDescriptorSet, but it can build it from JSON.
- *
- * This conversion is probably not very stable and does not yet "scale" that well, since it's
- * intended just for our relatively small usecase.
- *
- * (Also it's totally stupid having to do this in the first place.)
- */
+// Helper module that does conversion from already parsed protobuf's
+// FileDescriptorSet to JSON, that can be used to initialize ProtoBuf.js
+//
+// Theoretically this should not be necessary, since FileDescriptorSet is protobuf "native" description,
+// but ProtoBuf.js does NOT know how to make Builder from FileDescriptorSet, but it can build it from JSON.
+//
+// This conversion is probably not very stable and does not yet "scale" that well, since it's
+// intended just for our relatively small usecase.
+//
+// (Also it's totally stupid having to do this in the first place.)
 
 import * as _ from "lodash";
 
 export function protocolToJSON(p: any): Object {
-  var res = {};
-
-  //TODO: what if there are more files?
-  var res = fileToJSON(p.file[2]);
+  // TODO: what if there are more files?
+  const res = fileToJSON(p.file[2]);
   res.imports = [fileToJSON(p.file[1])];
   return res;
 }
 
 function fileToJSON(f: any): Object {
-  var res = {};
+  const res = {};
   res.package = f.package;
   res.options = f.options;
   res.services = [];
-  var messagesSimple = _.values(f.message_type).map(messageToJSON);
-  var messagesRef = extensionToJSON(f.extension);
+  const messagesSimple = _.values(f.message_type).map(messageToJSON);
+  const messagesRef = extensionToJSON(f.extension);
   res.messages = messagesRef.concat(messagesSimple);
   res.enums = _.values(f.enum_type).map(enumToJSON);
   return res;
 }
 
 function enumToJSON(enumm: any): Object {
-  var res = {};
+  const res = {};
   res.name = enumm.name;
   res.values = _.values(enumm.value).map(enum_valueToJSON);
   res.options = {};
@@ -68,9 +64,9 @@ function enumToJSON(enumm: any): Object {
 }
 
 function extensionToJSON(extensions: any): Object {
-  var res = {};
+  const res = {};
   _.values(extensions).forEach(function (extension) {
-    var extendee = extension.extendee.slice(1);
+    const extendee = extension.extendee.slice(1);
     if (res[extendee] == null) {
       res[extendee] = {};
       res[extendee].ref = extendee;
@@ -82,14 +78,14 @@ function extensionToJSON(extensions: any): Object {
 }
 
 function enum_valueToJSON(val: any): Object {
-  var res = {};
+  const res = {};
   res.name = val.name;
   res.id = val.number;
   return res;
 }
 
 function messageToJSON(message: any): Object {
-  var res = {};
+  const res = {};
   res.enums = [];
   res.name = message.name;
   res.options = message.options || {};
@@ -99,7 +95,7 @@ function messageToJSON(message: any): Object {
   return res;
 }
 
-var type_map = {
+const type_map = {
   "1": "double",
   "2": "float",
   "3": "int64",
@@ -117,11 +113,11 @@ var type_map = {
   "15": "sfixed32",
   "16": "sfixed64",
   "17": "sint32",
-  "18": "sint64"
-}
+  "18": "sint64",
+};
 
 function fieldToJSON(field: any): Object {
-  var res = {};
+  const res = {};
   if (field.label === 1) {
     res.rule = "optional";
   }
@@ -140,5 +136,3 @@ function fieldToJSON(field: any): Object {
   res.id = field.number;
   return res;
 }
-
-

@@ -21,7 +21,7 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-'use strict';
+"use strict";
 
 import * as ProtoBuf from "protobufjs";
 import {ByteBuffer} from "protobufjs";
@@ -32,16 +32,14 @@ export function patch(): void {
   ProtoBuf.Reflect.Message.Field.prototype.verifyValueOriginal = ProtoBuf.Reflect.Message.Field.prototype.verifyValue;
 
   ProtoBuf.Reflect.Message.Field.prototype.verifyValue = function (value, skipRepeated) {
-    var newValue = value;
+    let newValue = value;
     if (this.type === ProtoBuf.TYPES["bytes"]) {
-
       if (process.env.NODE_ENV === "debug") {
         console.log("Maybe converting from ", value);
       }
 
       if (value != null) {
         if (typeof value === "string") {
-
           if (process.env.NODE_ENV === "debug") {
             console.log("Converting from ", value);
           }
@@ -51,11 +49,9 @@ export function patch(): void {
           if (process.env.NODE_ENV === "debug") {
             console.log("Converted to ", newValue);
           }
-
         }
       }
     }
     return this.verifyValueOriginal(newValue, skipRepeated);
-  }
-
+  };
 }

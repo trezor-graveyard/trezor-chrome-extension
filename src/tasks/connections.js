@@ -21,13 +21,13 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-'use strict';
+"use strict";
 import * as hid from "../chrome/hid";
 import {catchUdevError} from "./udevStatus";
 
 // global object with deviceId => connectionId mapping
-var connectionsMap: {[keys: number]: number} = {};
-var reverse: {[keys: number]: number} = {};
+const connectionsMap: {[keys: number]: number} = {};
+const reverse: {[keys: number]: number} = {};
 
 function parseAcquireInput(input: any): {
   id: number,
@@ -35,29 +35,27 @@ function parseAcquireInput(input: any): {
   checkPrevious: boolean
 } {
   if (typeof input === "number") {
-    return {id: input, previous: null, checkPrevious: false}
+    return {id: input, previous: null, checkPrevious: false};
   } else if (typeof input === "object") {
-    var id = input.path;
-    var previous = input.previous;
+    const id = input.path;
+    const previous = input.previous;
     return {id: id, previous: previous, checkPrevious: true};
   } else {
     throw new Error("Wrong acquire input");
   }
 }
 
-var currentConnectionP: Promise = Promise.resolve();
+let currentConnectionP: Promise = Promise.resolve();
 
 export function acquire(input: any): Promise<{session: number}> {
+  const res: Promise<{session:number}> = currentConnectionP.then(() => {
+    const parsedInput = parseAcquireInput(input);
+    const id = parsedInput.id;
 
-  var res: Promise<{session:number}> = currentConnectionP.then(() => {
-
-    var parsedInput = parseAcquireInput(input);
-    var id = parsedInput.id;
-
-    var realPrevious = connectionsMap[id];
+    const realPrevious = connectionsMap[id];
 
     if (parsedInput.checkPrevious) {
-      var error = false;
+      let error = false;
       if (realPrevious == null) {
         if (parsedInput.previous != null) {
           error = true;
@@ -72,44 +70,37 @@ export function acquire(input: any): Promise<{session: number}> {
       }
     }
 
-    var releasePromise;
-
     // "stealing" sessions
     // if I am already connected (in a different tab for example),
     // disconnect that one
     if (realPrevious != null) {
-      return _realRelease(realPrevious).then(function(){return id;});
+      return _realRelease(realPrevious).then(() => id);
     } else {
       return Promise.resolve(id);
     }
-
-  }).then(function (id) {
-    return hid.connect(id).then(function (connectionId) {
-      return {connectionId: connectionId, id: id};
-    });
-  }).then(function (o) {
-    var connectionId = o.connectionId;
-    var id = o.id;
+  }).then((id) =>
+    hid.connect(id).then((connectionId) => {
+      return {connectionId, id};
+    })
+  ).then((o) => {
+    const connectionId = o.connectionId;
+    const id = o.id;
     connectionsMap[id] = connectionId;
     reverse[connectionId] = id;
 
     return {
-      session: connectionId
-    }
+      session: connectionId,
+    };
   });
   // even when we catch udev error, return rejection
-  res.catch(function(error) {
-    return catchUdevError(error);
-  });
-  currentConnectionP = res.catch(function(error) {
-    return;
-  })
+  res.catch((error) => catchUdevError(error));
+  currentConnectionP = res.catch(() => true);
   return res;
 }
 
 function _realRelease(connectionId: number): Promise<string> {
-  return hid.disconnect(connectionId).then(function () {
-    var deviceId = reverse[connectionId];
+  return hid.disconnect(connectionId).then(() => {
+    const deviceId = reverse[connectionId];
     delete reverse[connectionId];
     delete connectionsMap[deviceId];
     return "Success";
@@ -117,12 +108,8 @@ function _realRelease(connectionId: number): Promise<string> {
 }
 
 export function release(connectionId: number): Promise<string> {
-  var res = currentConnectionP.then(function() {
-    return _realRelease(connectionId);
-  });
-  currentConnectionP = res.catch(function(error) {
-    return;
-  });
+  const res = currentConnectionP.then(() => _realRelease(connectionId));
+  currentConnectionP = res.catch(() => true);
   return res;
 }
 

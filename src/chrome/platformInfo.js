@@ -18,16 +18,15 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+"use strict";
 
-'use strict';
+import type {ChromePlatformInfo} from "chromeApi";
 
-import type {ChromePlatformInfo} from 'chromeApi';
-
-//encapsulating chrome's platform info into Promise API
+// encapsulating chrome's platform info into Promise API
 export function platformInfo(): Promise<ChromePlatformInfo> {
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     try {
-      chrome.runtime.getPlatformInfo(function (info: ChromePlatformInfo) {
+      chrome.runtime.getPlatformInfo((info: ChromePlatformInfo) => {
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError);
         } else {
@@ -37,17 +36,15 @@ export function platformInfo(): Promise<ChromePlatformInfo> {
             resolve(info);
           }
         }
-
       });
     } catch (e) {
-      reject(e)
+      reject(e);
     }
-  })
+  });
 }
 
-
 export function manifest(): Promise<Object> {
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     try {
       resolve(chrome.runtime.getManifest());
     } catch (e) {

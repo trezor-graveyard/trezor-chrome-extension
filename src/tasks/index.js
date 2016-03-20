@@ -21,12 +21,9 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-'use strict';
+"use strict";
 
-/**
- * All the "actual logic" is encapsulated in this module
- */
-
+// All the "actual logic" is encapsulated in this module
 
 import {enumerate} from "./enumerate";
 import {listen} from "./listen";
@@ -46,28 +43,28 @@ function ping(): Promise<string> {
   return Promise.resolve("pong");
 }
 
-export var tasks: {
-             enumerate: () => Promise<Array<TrezorDeviceInfo>>,
-             listen: () => Promise<Array<TrezorDeviceInfo>>, 
-             call: (message:{id: ?number, type: ?string, message: Object}, messages:Messages) => 
-                                                                    Promise<{type: string, message: Object}>,
-             none: () => Promise<void>,
-             ping: () => Promise<string>,
-             configure: (signedData: string) => Promise<Messages>,
-             release: (connectionId: number) => Promise<string>,
-             acquire: (id: number) => Promise<{session: number}> ,
-             udevStatus: () => Promise<string>,
-             version: () => Promise<string>
-            } = {
-    enumerate: enumerate,
-    listen: listen,
-    call: call,
-    none: none,
-    ping: ping,
-    configure: configure,
-    acquire: acquire,
-    release: release,
-    udevStatus: udevStatus,
-    version: version
+export const tasks: {
+  enumerate: () => Promise<Array<TrezorDeviceInfo>>,
+  listen: () => Promise<Array<TrezorDeviceInfo>>,
+  call: (message:{id: ?number, type: ?string, message: Object}, messages:Messages) =>
+    Promise<{type: string, message: Object}>,
+  none: () => Promise<void>,
+  ping: () => Promise<string>,
+  configure: (signedData: string) => Promise<Messages>,
+  release: (connectionId: number) => Promise<string>,
+  acquire: (id: number) => Promise<{session: number}>,
+  udevStatus: () => Promise<string>,
+  version: () => Promise<string>,
+} = {
+  enumerate: enumerate,
+  listen: listen,
+  call: call,
+  none: none,
+  ping: ping,
+  configure: configure,
+  acquire: acquire,
+  release: release,
+  udevStatus: udevStatus,
+  version: version,
 };
 

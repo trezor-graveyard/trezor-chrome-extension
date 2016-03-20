@@ -21,12 +21,12 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-'use strict';
+"use strict";
 
 import {manifest} from "../chrome/platformInfo";
 
 export function version(): Promise<string> {
-  return manifest().then(function(manifestObject) {
+  return manifest().then((manifestObject) => {
     if (manifestObject.version != null) {
       return manifestObject.version;
     } else {

@@ -21,12 +21,10 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-'use strict';
+"use strict";
 
-/**
- * Helper module for converting Trezor's raw input to
- * ProtoBuf's message and from there to regular JSON to trezor.js
- */
+// Helper module for converting Trezor's raw input to
+// ProtoBuf's message and from there to regular JSON to trezor.js
 
 import * as ProtoBuf from "protobufjs";
 import {ByteBuffer, Long} from "protobufjs";
@@ -51,7 +49,7 @@ export class MessageDecoder {
   // Returns an info about this message,
   // which includes the constructor object and a name
   _messageInfo() : MessageInfo {
-    var r = this.messages.messagesByType[this.type];
+    const r = this.messages.messagesByType[this.type];
     if (r == null) {
       throw new Error("Method type not found", this.type);
     }
@@ -62,18 +60,18 @@ export class MessageDecoder {
   messageName() : string {
     return this._messageInfo().name;
   }
- 
+
   // Returns the actual decoded message, as a ProtoBuf.js object
   _decodedMessage() : ProtoBuf.Builder.Message {
-    var constructor = this._messageInfo().messageConstructor;
+    const constructor = this._messageInfo().messageConstructor;
     return constructor.decode(this.data);
   }
 
   // Returns the message decoded to JSON, that could be handed back
   // to trezor.js
   decodedJSON() : Object {
-    var decoded = this._decodedMessage();
-    var converted = messageToJSON(decoded);
+    const decoded = this._decodedMessage();
+    const converted = messageToJSON(decoded);
 
     return JSON.parse(JSON.stringify(converted));
   }
@@ -88,31 +86,23 @@ class MessageInfo {
   }
 }
 
-
-/**
- * Converts any ProtoBuf message to JSON in Trezor.js-friendly format
- * @param {ProtoBuf.Builder.Message} message Message to convert
- * @returns {Object} JSON
- */
+// Converts any ProtoBuf message to JSON in Trezor.js-friendly format
 function messageToJSON(message: ProtoBuf.Builder.Message) : Object {
-  var PB = ProtoBuf;
-  var res = {};
-  var meta = message.$type;
+  const res = {};
+  const meta = message.$type;
 
-
-  for (var key in message) {
-
-    var value = message[key];
+  for (const key in message) {
+    const value = message[key];
     if (typeof value === "function") {
-      //ignoring
+      // ignoring
     } else if (value instanceof ByteBuffer) {
-      var hex = value.toHex();
+      const hex = value.toHex();
       res[key] = hex;
     } else if (value instanceof Long) {
-      var num = value.toNumber();
+      const num = value.toNumber();
       res[key] = num;
     } else if (Array.isArray(value)) {
-      var decodedArr = value.map(function (i) {
+      const decodedArr = value.map((i) => {
         if (typeof i === "object") {
           return messageToJSON(i);
         } else {
@@ -123,12 +113,10 @@ function messageToJSON(message: ProtoBuf.Builder.Message) : Object {
     } else if (value instanceof ProtoBuf.Builder.Message) {
       res[key] = messageToJSON(value);
     } else if (meta._fieldsByName[key].type.name === "enum") {
-
-      var enumValues = meta._fieldsByName[key].resolvedType.getChildren();
+      const enumValues = meta._fieldsByName[key].resolvedType.getChildren();
       res[key] = _.find(enumValues, {
-        id: value
+        id: value,
       }).name;
-
     } else {
       res[key] = value;
     }

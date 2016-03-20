@@ -21,7 +21,7 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-'use strict';
+"use strict";
 
 import {patch} from "./protobuf/monkey_patch.js";
 patch();
@@ -29,7 +29,7 @@ patch();
 import {tasks} from "./tasks";
 import * as storage from "./chrome/storage";
 import type {Messages} from "./protobuf/messages";
-import type {ChromeMessageSender} from 'chromeApi';
+import type {ChromeMessageSender} from "chromeApi";
 
 type MessageToTrezor = {id: ?number, type: ?string, message: Object};
 type MessageFromTrezor = {type: string, message: Object};
@@ -37,31 +37,28 @@ type StatusInfo = {version: string, configured: boolean}
 
 // description of messages, loaded by configure
 // if null -> either not configured yet, or background page killed/restarted
-var messages: ?Messages = null;
+let messages: ?Messages = null;
 
 // when we try to read messages and it's null, we look into storage
 // if it's not saved. If it is saved, we try to configure again
 function messagesReload(): Promise<Messages> {
-  if (messages == null) { 
-    return storage.get("savedConfigure").then(function (body: string) {
+  if (messages == null) {
+    return storage.get("savedConfigure").then((body: string) => {
       // note - if configure becomes old, this invalidates and fails
       // but whenever we call "configure" this gets overwritten
-      return tasks.configure(body); 
-    }, function() {
-      return Promise.reject(new Error("No protocol definition, call configure"))
-    }).then(function (_messages) {
+      return tasks.configure(body);
+    }, () => {
+      return Promise.reject(new Error("No protocol definition, call configure"));
+    }).then((_messages) => {
       messages = _messages;
       return _messages;
-    })
+    });
   } else {
     return Promise.resolve(messages);
   }
-
 }
 
-
-
-var responseFunctions = {
+const responseFunctions = {
   ping: tasks.ping,
   enumerate: tasks.enumerate,
   listen: tasks.listen,
@@ -69,81 +66,75 @@ var responseFunctions = {
   release: tasks.release,
   udevStatus: tasks.udevStatus,
 
-  call: function (body: MessageToTrezor): Promise<MessageFromTrezor> {
-    return messagesReload().then(function (messages: Messages){
+  call: (body: MessageToTrezor): Promise<MessageFromTrezor> => {
+    return messagesReload().then((messages: Messages) => {
       return tasks.call(body, messages);
     });
   },
 
-  configure: function (body: string): Promise<string> {
-    return storage.set("savedConfigure", body).then(function () {
-      return tasks.configure(body)
-    }).then(function (loadedMessages: Messages): void {
+  configure: (body: string): Promise<string> => {
+    return storage.set("savedConfigure", body).then(() => {
+      return tasks.configure(body);
+    }).then((loadedMessages: Messages): void => {
       messages = loadedMessages;
-    }).then(function (): string {
-      return "Success"
+    }).then((): string => {
+      return "Success";
     });
   },
 
-  info: function(): Promise<StatusInfo> {
-    var hasMessagesP: Promise<boolean> = messagesReload().then( function() {
+  info: (): Promise<StatusInfo> => {
+    const hasMessagesP: Promise<boolean> = messagesReload().then(() => {
       return true;
-    }, function() {
+    }, () => {
       return false;
-    })
+    });
 
-    return hasMessagesP.then(function (hasMessages: boolean) {
-      return tasks.version().then(function (version: string): StatusInfo {
+    return hasMessagesP.then((hasMessages: boolean) => {
+      return tasks.version().then((version: string): StatusInfo => {
         return {
           version: version,
-          configured: hasMessages
+          configured: hasMessages,
         };
       });
     });
   },
-}
+};
 
 function handleMessage(request: Object, sender: ChromeMessageSender, sendResponse: (response: Object) => void): boolean {
-
   if (process.env.NODE_ENV === "debug") {
     console.log("Message arrived: ", request);
   }
 
-  var responseFunction = tasks.none;
+  const responseFunction = (responseFunctions[request.type])
+    ? responseFunctions[request.type]
+    : tasks.none;
 
-  if (responseFunctions[request.type]) {
-    responseFunction = responseFunctions[request.type];
-  }
-
-  var nonThrowingResponse = function (body) {
+  const nonThrowingResponse = (body) => {
     try {
       return responseFunction(body);
     } catch (e) {
       return Promise.reject(e);
     }
-  }
+  };
 
-  nonThrowingResponse(request.body).then(function (responseBody) {
-  
+  nonThrowingResponse(request.body).then((responseBody) => {
     if (process.env.NODE_ENV === "debug") {
       console.log("Response sent: ", responseBody);
     }
 
     sendResponse({
       type: "response",
-      body: responseBody
+      body: responseBody,
     });
-
-  }).catch(function (error) {
+  }).catch((error) => {
     if (process.env.NODE_ENV === "debug") {
       console.log("Error sent: ", error);
     }
 
     sendResponse({
       type: "error",
-      message: error.message || error
+      message: error.message || error,
     });
-
   });
 
   // "return true" is necessary for asynchronous message passing,
@@ -154,29 +145,28 @@ function handleMessage(request: Object, sender: ChromeMessageSender, sendRespons
 chrome.runtime.onMessage.addListener(handleMessage);
 chrome.runtime.onMessageExternal.addListener(handleMessage);
 
-storage.get("afterInstall").then(function (afterInstall) {
+storage.get("afterInstall").then((afterInstall) => {
   if (afterInstall === null) {
     return storage.set("afterInstall", true);
   }
-}).catch(function (e) {
-  console.error(e)
-})
+}).catch((e) => {
+  console.error(e);
+});
 
-var windowOpen : boolean = false;
+let windowOpen : boolean = false;
 
-chrome.app.runtime.onLaunched.addListener(function () {
+chrome.app.runtime.onLaunched.addListener(() => {
   if (!windowOpen) {
-    chrome.app.window.create('management/index.html', {
-      'innerBounds': {
-        'width': 774,
-        'height': 774
-      }
-    }, function (newWindow) {
+    chrome.app.window.create("management/index.html", {
+      "innerBounds": {
+        "width": 774,
+        "height": 774,
+      },
+    }, (newWindow) => {
       windowOpen = true;
-      newWindow.onClosed.addListener(function () {
+      newWindow.onClosed.addListener(() => {
         windowOpen = false;
       });
-
     });
   }
 });

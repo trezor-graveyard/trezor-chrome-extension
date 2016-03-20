@@ -21,23 +21,16 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-'use strict';
+"use strict";
 
 import {verifyHexBin} from "../verify.js";
 import {parseConfigure} from "../protobuf/parse_protocol.js";
 import type {Messages} from "../protobuf/messages.js";
 
-
-
-/**
- * Loads the signed data with protobuf description
- * @param {string} signedData Data in hexadecimal that is signature plus the data
- * @returns {Promise.<Object.<string, ProtoBuf.Builder.Message>>} Building result from protobuf.js;
- *                                                                can be used to build messages
- */
-export function configure (signedData: string): Promise<Messages> {
-  return verifyHexBin(signedData).then(function (data: Buffer): Messages {
+// Loads the signed data with protobuf description
+export function configure(signedData: string): Promise<Messages> {
+  return verifyHexBin(signedData).then((data: Buffer): Messages => {
     return parseConfigure(data);
-  })
+  });
 }
 

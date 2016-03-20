@@ -21,48 +21,40 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-'use strict';
+"use strict";
 import {enumerate} from "./enumerate";
 import * as constants from "../constants";
 import type {TrezorDeviceInfo} from "./enumerate";
-var stringify = require('json-stable-stringify');
+const stringify = require("json-stable-stringify");
 
-var iterMax: number = constants.LISTEN_ITERS;
-var delay: number = constants.LISTEN_DELAY;
-var lastStringified: string = "";
+const iterMax: number = constants.LISTEN_ITERS;
+const delay: number = constants.LISTEN_DELAY;
+let lastStringified: string = "";
 
 // Helper function for making Promise out of timeout
 // (I am surprised this is not in Promise library already)
 
-// unfortunately, flowtype cannot do the typechecking in here (variadic doesn't work here)
-function timeoutPromise(func: Function, delay: number, params: Array<any>): any {
-  return new Promise(function (resolve, reject) {
-    window.setTimeout(function () {
-      try {
-        var res = func.apply(null, params);
-        resolve(res);
-      } catch (e) {
-        reject(e);
-      }
-    }, delay);
-  });
+function timeoutPromise(delay: number): Promise<void> {
+  return new Promise((resolve) =>
+    window.setTimeout(() => resolve(), delay)
+  );
 }
 
 function runIter(iteration: number, oldStringified: string): Promise<Array<TrezorDeviceInfo>> {
-  return enumerate().then(function (devices) {
-    var stringified = stringify(devices);
+  return enumerate().then((devices) => {
+    const stringified = stringify(devices);
     if ((stringified !== oldStringified) || (iteration === iterMax)) {
       lastStringified = stringified;
       return devices;
-    };
-    return timeoutPromise(runIter, delay, [iteration + 1, stringified]);
+    }
+    return timeoutPromise(delay).then(() => runIter(iteration + 1, stringified));
   });
 }
 
 // old is a direct input from caller; we cannot really assume anything there
 export function listen(old: ?Object): Promise<Array<TrezorDeviceInfo>> {
-  var oldStringified = stringify(old);
-  var last = old == null ? lastStringified : oldStringified;
+  const oldStringified = stringify(old);
+  const last = old == null ? lastStringified : oldStringified;
   return runIter(0, last);
 }
 

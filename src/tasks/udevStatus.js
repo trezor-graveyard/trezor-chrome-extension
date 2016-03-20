@@ -21,48 +21,38 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-'use strict';
+"use strict";
 
 import {platformInfo} from "../chrome/platformInfo";
 import * as storage from "../chrome/storage";
 
-var hasError: boolean = false;
+let hasError: boolean = false;
 
-//-1 -> undefined
+// -1 -> undefined
 // 0 -> not linux
 // 1 -> linux
-var cachedIsLinux: number = -1;
+let cachedIsLinux: number = -1;
 
-/**
- * Is this computer linux?
- * @return {Promise.<Boolean>} True or false, depending on OS
- */
+// Is this computer linux?
 function isLinux(): Promise<boolean> {
-  if (cachedIsLinux != -1) {
-    return Promise.resolve(cachedIsLinux == 1);
+  if (cachedIsLinux !== -1) {
+    return Promise.resolve(cachedIsLinux === 1);
   }
-  return platformInfo().then(function (info) {
-    var isLinux = (info.os === "linux");
+  return platformInfo().then((info) => {
+    const isLinux = (info.os === "linux");
     cachedIsLinux = isLinux ? 1 : 0;
     return isLinux;
-  })
+  });
 }
 
-/**
- * Right after install I set up a "afterInstall
- * @return {Promise.<Boolean>}
- */
+// Right after install I set up a "afterInstall
 function isAfterInstall(): Promise<boolean> {
-  return storage.get("afterInstall").then(function (afterInstall) {
+  return storage.get("afterInstall").then((afterInstall) => {
     return (afterInstall === true);
-  })
+  });
 }
 
-
-/**
- * Sets error.
- * @param error {Boolean}
- */
+// Sets error.
 function setError(error: boolean): void {
   hasError = error;
 }
@@ -71,29 +61,24 @@ export function clearUdevError(): void {
   setError(false);
 }
 
-/**
- * Returns udev status.
- * @return {Promise.<String>} "display" or "hide".
- */
+// Returns udev status.
 export function udevStatus(): Promise<string> {
-  return isLinux().then(function (linux) {
-    return isAfterInstall().then(function (afterInstall) {
+  return isLinux().then((linux) => {
+    return isAfterInstall().then((afterInstall) => {
       if ((afterInstall || hasError) && linux) {
         return "display";
       } else {
         return "hide";
       }
     });
-  })
+  });
 }
 
-/**
- * Helper function for catching udev errors. It gets called in
- * tasks/call.js (only in initialize) and tasks/connections.js (in acquire).
- * @return {Promise} Rejection with the original error
- */
-export function catchUdevError (error: Error): Promise {
-  var errMessage = error;
+// Helper function for catching udev errors. It gets called in
+// tasks/call.js (only in initialize) and tasks/connections.js (in acquire).
+// Returns rejection with the original error
+export function catchUdevError(error: Error): Promise {
+  let errMessage = error;
   if (errMessage.message !== undefined) {
     errMessage = errMessage.message;
   }
@@ -103,5 +88,4 @@ export function catchUdevError (error: Error): Promise {
     setError(true);
   }
   return Promise.reject(error);
-
 }
