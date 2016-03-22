@@ -1,7 +1,7 @@
 {
   "name": "TREZOR Chrome Extension",
   "description": "Chrome extension for TREZOR",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "author": "SatoshiLabs",
   "short_name": "TREZOR Extension",
 
