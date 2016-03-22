@@ -43,8 +43,16 @@ export function call(message: MessageToTrezor, messages: Messages): Promise<Mess
   }
   // body can probably be null
 
-  const id: number = message.id;
-  const type: string = message.type;
+  /* $FlowIssue - cannot parse non-strings */
+  const id: number = parseInt(message.id);
+  if (isNaN(id)) {
+    throw new Error("Connection ID is not a number");
+  }
+  const type_: mixed = message.type;
+  if (typeof type_ !== "string") {
+    throw new Error("Type is not string.");
+  }
+  const type: string = type_;
   const body: Object = message.message;
 
   const res = send(messages, id, type, body).then(() => {

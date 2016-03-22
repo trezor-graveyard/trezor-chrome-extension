@@ -35,14 +35,19 @@ function parseAcquireInput(input: any): {
   previous: ?number,
   checkPrevious: boolean
 } {
-  if (typeof input === "number") {
-    return {id: input, previous: null, checkPrevious: false};
-  } else if (typeof input === "object") {
-    const id = input.path;
+  if (typeof input === "object") {
+    const id = parseInt(input.path);
+    if (isNaN(id)) {
+      throw new Error("Wrong acquire input");
+    }
     const previous = input.previous;
     return {id: id, previous: previous, checkPrevious: true};
   } else {
-    throw new Error("Wrong acquire input");
+    const id = parseInt(input.path);
+    if (isNaN(id)) {
+      throw new Error("Wrong acquire input");
+    }
+    return {id: input, previous: null, checkPrevious: false};
   }
 }
 
@@ -149,7 +154,13 @@ export function doOnRelease(connectionId: number, fun: () => void) {
 }
 
 export function release(connectionId: number): Promise<string> {
-  return lockConnection(() => _realRelease(connectionId));
+  /* $FlowIssue - cannot parse non-strings */
+  const id = parseInt(connectionId);
+  if (isNaN(id)) {
+    throw new Error("Wrong release input");
+  }
+
+  return lockConnection(() => _realRelease(id));
 }
 
 export function getSession(deviceId: number): ?number {

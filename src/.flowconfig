@@ -15,3 +15,4 @@
 ../flowtype_definitions/chrome.js
 
 [options]
+suppress_comment=\\(.\\|\n\\)*\\$FlowIssue
