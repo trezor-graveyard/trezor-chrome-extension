@@ -1,9 +1,9 @@
 all: clear zip
 
-flow-check:
+flow:
 	cd src; flow check
 
-eslint-check:
+eslint:
 	cd src; eslint .
 
 clear: 
@@ -26,8 +26,8 @@ dist-build:
 debug: pre-browserify-debug
 	NODE_ENV=debug `npm bin`/browserify src/index.js -d -o extension/index.js
 
-pre-browserify: check-modules eslint-check src/config_proto_compiled.js flow-check management_make manifest
-pre-browserify-debug: check-modules eslint-check src/config_proto_compiled.js flow-check manifest
+pre-browserify: check-modules src/config_proto_compiled.js management_make manifest
+pre-browserify-debug: check-modules src/config_proto_compiled.js manifest
 
 src/config_proto_compiled.js:
 	./compile_protobuf.sh
