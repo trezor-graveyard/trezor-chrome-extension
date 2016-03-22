@@ -1,6 +1,6 @@
 all: clear zip
 
-flow:
+flow: src/config_proto_compiled.js
 	cd src; flow check
 
 eslint:
