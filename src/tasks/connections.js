@@ -43,7 +43,7 @@ function parseAcquireInput(input: any): {
     const previous = input.previous;
     return {id: id, previous: previous, checkPrevious: true};
   } else {
-    const id = parseInt(input.path);
+    const id = parseInt(input);
     if (isNaN(id)) {
       throw new Error("Wrong acquire input");
     }
