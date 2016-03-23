@@ -119,7 +119,7 @@ function handleMessage(request: Object, sender: ChromeMessageSender, sendRespons
 
   nonThrowingResponse(request.body).then((responseBody) => {
     if (process.env.NODE_ENV === "debug") {
-      console.log("Response sent: ", responseBody);
+      console.log("Response sent: ", JSON.parse(JSON.stringify(responseBody)), JSON.parse(JSON.stringify(request)));
     }
 
     sendResponse({
@@ -128,7 +128,7 @@ function handleMessage(request: Object, sender: ChromeMessageSender, sendRespons
     });
   }).catch((error) => {
     if (process.env.NODE_ENV === "debug") {
-      console.log("Error sent: ", error);
+      console.log("Error sent: ", error, JSON.parse(JSON.stringify(request)));
     }
 
     sendResponse({
