@@ -1,12 +1,10 @@
-TREZOR Chrome Extension
-===
+# TREZOR Chrome Extension
 
-[![Build Status](https://travis-ci.org/trezor/trezor-chrome-extension.svg?branch=master)](https://travis-ci.org/trezor/trezor-chrome-extension)
+[![Build Status](https://travis-ci.org/trezor/trezor-chrome-extension.svg?branch=master)](https://travis-ci.org/trezor/trezor-chrome-extension) [![gitter](https://badges.gitter.im/trezor/community.svg)](https://gitter.im/trezor/community)
 
 Chrome extension for [Bitcoin TREZOR](https://www.bitcointrezor.com/) by [SatoshiLabs](http://satoshilabs.com/).
 
-About
----
+## About
 
 TREZOR Chrome Extension has two different purposes.
 
@@ -18,21 +16,20 @@ The messages are encoded through [protobuf.js](https://github.com/dcodeIO/ProtoB
 
 The API of the extensions is described below. **For development of web apps for TREZOR, it is recommended to use [trezor.js](https://github.com/trezor/trezor.js) javascript API, which has separate javascript calls for most common usecases; or [TREZOR Connect](https://github.com/trezor/connect), which is even more high level.** However, the *end user* still needs to install either the extension or [trezord](https://github.com/trezor/trezord).
 
-Install via Web store
----
+## Install via Web store
+
 Extension is available for download [at Google Web store](https://chrome.google.com/webstore/detail/jcjjhjgimijdkoamemaghajlhegmoclj) (and is automatically offered on [myTREZOR webwallet](https://www.mytrezor.com)).
 
-Install via ZIP
----
+## Install via ZIP
+
 If you don't trust Google Web store (or want to use an offline machine), you can download the ZIP file extension.zip, unzip it, go to [chrome://extensions/](chrome://extensions/) in Chrome, enable "Developer mode", click "Load upacked extension" and find the directory.
 
 The ZIP file in the repo will be updated simultaneously with the updates in Google Web Store; it might not be up-to-date with the master branch.
 
 
-Install from source
-----
+## Install from source
 
-###Checking out sources
+### Checking out sources
 
 ```
 git clone --recursive https://github.com/trezor/chrome-extension.git
@@ -44,7 +41,7 @@ Or, if you already cloned the repository but not the submodules
 git submodule update --init --recursive
 ```
 
-###Building
+### Building
 
 Building works on OS X and Linux and uses `make`.
 
@@ -60,16 +57,14 @@ make clear # if you built before
 make zip
 ```
 
-Source
----
+## Source
 
 The source code of the transport layer is using [flow](http://flowtype.org) type annotations and some features of ECMAScript 6.
 
 The source code of the device management is an angular app. If it seems a little "over-blown", it's because it was created as a clone of the whole myTREZOR app, which handles more than device management, and then functionality was stripped off. 
 
 
-Caveats
--------
+## Caveats
 
 On Mac OS X, Windows and Chrome OS, installing the extension should work without any root privileges. Unfortunately, on GNU/Linux, you have install so-called udev rules as a root.
 
@@ -79,11 +74,11 @@ If you don't want to or can't install that, please refer to our documentation
 
 http://doc.satoshilabs.com/trezor-user/settingupchromeonlinux.html
 
-API
-----
+## API
+
 If installed using some of the described methods, the extension has an id `jcjjhjgimijdkoamemaghajlhegmoclj`. 
 
-You send the messages to the extension using [chrome messages API](https://developer.chrome.com/extensions/messaging) (read the note about whitelisting below). 
+You send the messages to the extension using [chrome messages API](https://developer.chrome.com/extensions/messaging) (read the note about whitelisting below).
 
 The messages are javacript Objects with `type` property and `body` property; `type` is always string, `body` varies depending on the type. 
 
@@ -106,7 +101,7 @@ chrome.runtime.sendMessage('jcjjhjgimijdkoamemaghajlhegmoclj', {type: "info"},
 The possible messages are:
 
 | type | body | response type | description |
-|-------------|------------|-------------|-------------|
+|------|------|---------------|-------------|
 | `info` | | {`version`:&nbsp;string,<br> `configured`:&nbsp;boolean} | Returns current version of bridge and info about configuration.<br>See `configure` for more info. |
 | `configure` | config, as hex string | `"Success"` | Before any advanced call, configuration file needs to be loaded to extension.<br> Configuration file is signed by SatoshiLabs and the validity of the signature is limited.<br>Current config should be [in this repo](https://github.com/trezor/webwallet-data/blob/master/config_signed.bin), or [on AWS here](http://mytrezor.s3.amazonaws.com/config_signed.bin). |
 | `enumerate` | | Array&lt;{`path`:&nbsp;number, <br>`session`:&nbsp;number&nbsp;&#124;&nbsp;null}&gt; | Lists devices.<br>`path` uniquely defines device between more connected devices. It usually increases on reconnect until restart of browser, but there is no guarantee.<br>If `session` is null, nobody else is using the device; if it's number, it identifies who is using it. |
@@ -121,9 +116,7 @@ You cannot connect to the extension from anywhere on the internet. Your URL need
 
 `localhost` is specifically whitelisted, so you can experiment on `http://localhost`. If you want to add your url in order to make a TREZOR web app, [make a pull request to this file](https://github.com/trezor/trezor-common/blob/master/signer/config.json).
 
-
-License
----
+## License
 
 GPLv3
 
