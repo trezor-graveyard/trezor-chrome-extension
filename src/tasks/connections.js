@@ -154,7 +154,6 @@ export function doOnRelease(connectionId: number, fun: () => void) {
 }
 
 export function release(connectionId: number): Promise<string> {
-  /* $FlowIssue - cannot parse non-strings */
   const id = parseInt(connectionId);
   if (isNaN(id)) {
     throw new Error("Wrong release input");

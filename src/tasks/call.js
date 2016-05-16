@@ -43,7 +43,6 @@ export function call(message: MessageToTrezor, messages: Messages): Promise<Mess
   }
   // body can probably be null
 
-  /* $FlowIssue - cannot parse non-strings */
   const id: number = parseInt(message.id);
   if (isNaN(id)) {
     throw new Error("Connection ID is not a number");
