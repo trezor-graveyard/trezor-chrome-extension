@@ -7,8 +7,7 @@ addons:
       - python3
 
 node_js:
-  - "4.1"
-  - "4.0"
+  - "4.4"
 
 before_script:
   - npm install -g flow-bin eslint eslint-plugin-flow-vars babel-eslint@6.0.0-beta.6 eslint-plugin-standard eslint-plugin-promise
