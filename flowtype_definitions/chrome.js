@@ -1,4 +1,3 @@
-declare module 'chromeApi' {
   declare class Chrome {
     hid: ChromeHid;
     runtime: ChromeRuntime;
@@ -130,9 +129,6 @@ declare module 'chromeApi' {
     create: (url: string, options: {innerBounds: ChromeBoundsSpecification}, callback: (createdWindow: ChromeAppWindow) => void) => void;
     onClosed: ChromeAppWindowOnClosed;
   }
-}
 
-import * as chromeApi from 'chromeApi';
-
-declare var chrome: chromeApi.Chrome;
+declare var chrome: Chrome;
 

@@ -24,7 +24,6 @@
 "use strict";
 
 import * as constants from "../constants.js";
-import type {ChromeHidDeviceInfo} from "chromeApi";
 
 // Enumerates trezors.
 export function enumerate(): Promise<Array<ChromeHidDeviceInfo>> {

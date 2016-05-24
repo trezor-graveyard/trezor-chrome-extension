@@ -24,7 +24,6 @@
 "use strict";
 import * as hid from "../chrome/hid";
 import {catchUdevError} from "./udevStatus";
-import type {ChromeHidDeviceInfo} from "chromeApi";
 
 // global object with deviceId => connectionId mapping
 const connectionsMap: {[keys: string]: number} = {};

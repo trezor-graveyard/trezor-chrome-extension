@@ -23,8 +23,6 @@
 
 "use strict";
 
-import type {ChromeHidGetDevicesOptions} from "chromeApi";
-
 export const TREZOR_DESC: ChromeHidGetDevicesOptions = {
   vendorId: 0x534c,
   productId: 0x0001,

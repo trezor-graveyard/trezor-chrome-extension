@@ -24,7 +24,6 @@
 "use strict";
 import * as hid from "../chrome/hid";
 import * as connections from "./connections";
-import type {ChromeHidDeviceInfo} from "chromeApi";
 
 export class TrezorDeviceInfo {
   path: number;
