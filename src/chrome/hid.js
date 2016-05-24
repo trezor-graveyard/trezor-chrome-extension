@@ -43,7 +43,7 @@ export function enumerate(): Promise<Array<ChromeHidDeviceInfo>> {
     } catch (e) {
       reject(e);
     }
-  });
+  }).then(devices => devices.filter(device => device.collections[0].usagePage !== 0xf1d0));
 }
 
 // Sends buffer to Trezor.
