@@ -38,7 +38,7 @@
     "ecurve": "^1.0.0",
     "json-stable-stringify": "^1.0.1",
     "lodash": "~3.6.0",
-    "protobufjs": "~3.8.2"
+    "protobufjs": "3.8.2"
   },
   "devDependencies": {
     "babel-plugin-add-module-exports": "^0.1.2",
