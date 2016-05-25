@@ -23,9 +23,12 @@
 
 "use strict";
 
+export const TREZOR_VENDOR_ID: number = 0x534c;
+export const TREZOR_PRODUCT_ID: number = 0x0001;
+
 export const TREZOR_DESC: ChromeHidGetDevicesOptions = {
-  vendorId: 0x534c,
-  productId: 0x0001,
+  vendorId: TREZOR_VENDOR_ID,
+  productId: TREZOR_PRODUCT_ID,
 };
 
 export const HEADER_SIZE: number = 1 + 1 + 4 + 2; // should be 8 :-)

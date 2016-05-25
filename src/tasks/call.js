@@ -29,7 +29,7 @@ import {clearUdevError, catchUdevError} from "./udevStatus";
 import * as storage from "../chrome/storage";
 import type {Messages} from "../protobuf/messages.js";
 
-type MessageToTrezor = {id: ?number, type: ?string, message: Object};
+type MessageToTrezor = {id: ?(number|string), type: ?string, message: Object};
 type MessageFromTrezor = {type: string, message: Object};
 
 // Sends a message to Trezor and returns
@@ -43,9 +43,11 @@ export function call(message: MessageToTrezor, messages: Messages): Promise<Mess
   }
   // body can probably be null
 
-  const id: number = parseInt(message.id);
-  if (isNaN(id)) {
-    throw new Error("Connection ID is not a number");
+  const id: number|string = message.id;
+  if (isNaN(parseInt(id))) {
+    if ((!(id.toString().startsWith("udp"))) || (isNaN(parseInt(id.toString().slice(3))))) {
+      throw new Error("Connection ID is not a number");
+    }
   }
   const type_: mixed = message.type;
   if (typeof type_ !== "string") {
@@ -75,7 +77,7 @@ export function call(message: MessageToTrezor, messages: Messages): Promise<Mess
   return Promise.race([res, rejectOnRelease(id)]);
 }
 
-function rejectOnRelease(id: number): Promise {
+function rejectOnRelease(id: number|string): Promise {
   return new Promise((resolve, reject) => {
     connections.doOnRelease(id, () => reject(new Error("Device released or disconnected.")));
   });

@@ -24,20 +24,34 @@
 "use strict";
 import * as hid from "../chrome/hid";
 import * as connections from "./connections";
+import * as constants from "../constants.js";
 
-export class TrezorDeviceInfo {
-  path: number;
+export type TrezorDeviceInfo = {
+  path: number | string;
   vendor: number;
   product: number;
   serialNumber: number; // always 0
-  session: ?number; // might be null/undefined
-  constructor(device: ChromeHidDeviceInfo) {
-    this.path = device.deviceId;
-    this.vendor = device.vendorId;
-    this.product = device.productId;
-    this.serialNumber = 0;
-    this.session = connections.getSession(this.path);
-  }
+  session: ?(number | string); // might be null/undefined
+}
+
+function deviceToJSON(device: ChromeHidDeviceInfo): TrezorDeviceInfo {
+  return {
+    path: device.deviceId,
+    vendor: device.vendorId,
+    product: device.productId,
+    serialNumber: 0,
+    session: connections.getSession(device.deviceId),
+  };
+}
+
+function udpToJSON(udp: number): TrezorDeviceInfo {
+  return {
+    path: "udp" + udp,
+    vendor: constants.TREZOR_VENDOR_ID,
+    product: constants.TREZOR_PRODUCT_ID,
+    serialNumber: 0,
+    session: connections.getSession("udp" + udp),
+  };
 }
 
 // Converts a HID device array to a description that trezor.js understands.
@@ -54,7 +68,7 @@ function devicesToJSON(devices: Array<ChromeHidDeviceInfo>): Array<TrezorDeviceI
     return 0;
   };
 
-  return devices.sort(compare).map(d => new TrezorDeviceInfo(d));
+  return devices.sort(compare).map(d => deviceToJSON(d));
 }
 
 // Returns devices in JSON form
@@ -62,8 +76,11 @@ export function enumerate(): Promise<Array<TrezorDeviceInfo>> {
   return connections.lockConnection(() => {
     return hid.enumerate().then((devices: Array<ChromeHidDeviceInfo>): Array<TrezorDeviceInfo> => {
       connections.setReportIds(devices);
-      connections.releaseDisconnected(devices);
       return devicesToJSON(devices);
+    }).then((devices: Array<TrezorDeviceInfo>): Array<TrezorDeviceInfo> => {
+      const all = devices.concat(connections.udpPorts.map(port => udpToJSON(port)));
+      connections.releaseDisconnected(all);
+      return all;
     });
   });
 }

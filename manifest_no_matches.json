@@ -13,6 +13,12 @@
     "128": "icon128.png"
   },
 
+  "sockets": {
+    "udp": {
+      "bind": "127.0.0.1:*",
+      "send": "127.0.0.1:*"
+    }
+  },
   "app": {
     "background": {
       "scripts": ["index.js"]

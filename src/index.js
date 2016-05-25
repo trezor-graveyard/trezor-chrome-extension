@@ -29,8 +29,9 @@ patch();
 import {tasks} from "./tasks";
 import * as storage from "./chrome/storage";
 import type {Messages} from "./protobuf/messages";
+import {setUdp} from "./tasks/connections";
 
-type MessageToTrezor = {id: ?number, type: ?string, message: Object};
+type MessageToTrezor = {id: ?(number|string), type: ?string, message: Object};
 type MessageFromTrezor = {type: string, message: Object};
 type StatusInfo = {version: string, configured: boolean}
 
@@ -141,32 +142,44 @@ function handleMessage(request: Object, sender: ChromeMessageSender, sendRespons
   return true;
 }
 
-chrome.runtime.onMessage.addListener(handleMessage);
-chrome.runtime.onMessageExternal.addListener(handleMessage);
-
-storage.get("afterInstall").then((afterInstall) => {
-  if (afterInstall === null) {
-    return storage.set("afterInstall", true);
+storage.get("udp").then((udpSerialized) => {
+  const udpStorage = JSON.parse(udpSerialized);
+  if (udpStorage instanceof Array) {
+    setUdp(udpStorage);
   }
-}).catch((e) => {
-  console.error(e);
-});
 
-let windowOpen : boolean = false;
+  chrome.runtime.onMessage.addListener(handleMessage);
+  chrome.runtime.onMessageExternal.addListener(handleMessage);
 
-chrome.app.runtime.onLaunched.addListener(() => {
-  if (!windowOpen) {
-    chrome.app.window.create("management/index.html", {
-      "innerBounds": {
-        "width": 774,
-        "height": 774,
-      },
-    }, (newWindow) => {
-      windowOpen = true;
-      newWindow.onClosed.addListener(() => {
-        windowOpen = false;
+  storage.get("afterInstall").then((afterInstall) => {
+    if (afterInstall === null) {
+      return storage.set("afterInstall", true);
+    }
+  }).catch((e) => {
+    console.error(e);
+  });
+
+  let windowOpen : boolean = false;
+
+  chrome.app.runtime.onLaunched.addListener(() => {
+    if (!windowOpen) {
+      chrome.app.window.create("management/index.html", {
+        "innerBounds": {
+          "width": 774,
+          "height": 774,
+        },
+      }, (newWindow) => {
+        windowOpen = true;
+        newWindow.onClosed.addListener(() => {
+          windowOpen = false;
+        });
       });
-    });
-  }
+    }
+  });
 });
 
+window.setUdp = function (ports: Array<number>) {
+  storage.set("udp", JSON.stringify(ports));
+  setUdp(ports);
+  console.log("Ports added", ports);
+};

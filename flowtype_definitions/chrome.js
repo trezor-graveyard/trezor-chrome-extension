@@ -39,6 +39,7 @@ declare type ChromeUdpReceiveInfo = {
 
 declare class ChromeUdp {
   create: (properties: ChromeUdpProperties, callback: (info: ChromeUdpCreateInfo) => void) => void;
+  close: (socketId: number, callback: () => void) => void;
   bind: (socketId: number, address: string, port: number, callback: (result: number) => void) => void;
   send: (socketId: number, data: ArrayBuffer, address: string, port: number,
     callback: (info: ChromeUdpSendInfo) => void

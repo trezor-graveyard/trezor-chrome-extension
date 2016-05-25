@@ -27,6 +27,7 @@
 // Logic of "call" is broken to two parts - sending and recieving
 
 import * as hid from "../chrome/hid";
+import * as udp from "../chrome/udp";
 import * as constants from "../constants.js";
 import {MessageDecoder} from "../protobuf/message_decoder.js";
 import {ByteBuffer} from "protobufjs";
@@ -88,14 +89,19 @@ function parseFirstInput(bytes: ArrayBuffer): PartiallyParsedInput {
   return res;
 }
 
+function receiveLogic(id: number|string): Promise<ArrayBuffer> {
+  const isUdp = id.toString().startsWith("udp");
+  return isUdp ? udp.receive(parseInt(id.toString().slice(3))) : hid.receive(parseInt(id));
+}
+
 // If the whole message wasn't loaded in the first input, loads more inputs until everything is loaded.
 // note: the return value is not at all important since it's still the same parsedinput
-function receiveRest(parsedInput: PartiallyParsedInput, id: number): Promise<void> {
+function receiveRest(parsedInput: PartiallyParsedInput, id: number|string): Promise<void> {
   if (parsedInput.isDone()) {
     return Promise.resolve(undefined); // flow bug
   }
 
-  return hid.receive(id).then((data) => {
+  return receiveLogic(id).then((data) => {
     // sanity check
     if (data == null) {
       throw new Error("Received no data.");
@@ -113,8 +119,8 @@ function receiveRest(parsedInput: PartiallyParsedInput, id: number): Promise<voi
  * @returns {ArrayBuffer} d.buffer The message as a buffer
  * @returns {int} d.type Message type number
  */
-function receiveBuffer(id: number): Promise<PartiallyParsedInput> {
-  return hid.receive(id).then((data: ArrayBuffer) => {
+function receiveBuffer(id: number|string): Promise<PartiallyParsedInput> {
+  return receiveLogic(id).then((data: ArrayBuffer) => {
     const partialInput: PartiallyParsedInput = parseFirstInput(data);
 
     return receiveRest(partialInput, id).then(() => {
@@ -131,7 +137,7 @@ function receiveBuffer(id: number): Promise<PartiallyParsedInput> {
  * @returns {Object} res.message Message as JSON
  * @returns {string} res.type Message name
  */
-export function receive(messages: Messages, id: number): Promise<MessageFromTrezor> {
+export function receive(messages: Messages, id: number|string): Promise<MessageFromTrezor> {
   return receiveBuffer(id).then((received) => {
     const typeId: number = received.typeNumber;
     const buffer: ArrayBuffer = received.arrayBuffer();

@@ -23,11 +23,13 @@
 
 "use strict";
 import * as hid from "../chrome/hid";
+import * as udp from "../chrome/udp";
 import {catchUdevError} from "./udevStatus";
+import type {TrezorDeviceInfo} from "./enumerate";
 
 // global object with deviceId => connectionId mapping
-const connectionsMap: {[keys: string]: number} = {};
-const reverse: {[keys: string]: number} = {};
+const connectionsMap: {[keys: string]: number|string } = {};
+const reverse: {[keys: string]: number | string} = {};
 
 // deviceId => boolean
 const _hasReportId: {[keys: string]: boolean} = {};
@@ -39,29 +41,45 @@ export function setReportIds(devices: Array<ChromeHidDeviceInfo>) {
 }
 
 // session ID => boolean
-export function hasReportId(connectionId: number): boolean {
-  const deviceId: number = reverse[connectionId.toString()];
-  return _hasReportId[deviceId.toString()];
+export function hasReportId(connectionId: number|string): boolean {
+  const deviceId: number|string = reverse[connectionId.toString()];
+
+  // !!, because udp devices are not in there
+  return !!_hasReportId[deviceId.toString()];
+}
+
+export let udpPorts: Array<number> = [];
+
+export function setUdp(udp: Array<number>) {
+  udpPorts = udp;
+}
+
+function parseId(input: any): number | string {
+  const idN: number = parseInt(input);
+  if (isNaN(idN)) {
+    const idS = input.toString();
+    if (idS.startsWith("udp") && !isNaN(parseInt(idS.slice(3)))) {
+      return idS;
+    } else {
+      throw new Error("Wrong acquire input");
+    }
+  }
+
+  return idN;
 }
 
 function parseAcquireInput(input: any): {
-  id: number,
+  id: number | string,
   previous: ?number,
   checkPrevious: boolean
 } {
   if (typeof input === "object") {
-    const id = parseInt(input.path);
-    if (isNaN(id)) {
-      throw new Error("Wrong acquire input");
-    }
+    const id = parseId(input.path);
     const previous = input.previous;
     return {id: id, previous: previous, checkPrevious: true};
   } else {
-    const id = parseInt(input);
-    if (isNaN(id)) {
-      throw new Error("Wrong acquire input");
-    }
-    return {id: input, previous: null, checkPrevious: false};
+    const id = parseId(input);
+    return {id: id, previous: null, checkPrevious: false};
   }
 }
 
@@ -75,7 +93,7 @@ export function lockConnection<X>(fn: () => Promise<X>): Promise<X> {
 
 export function acquire(input: any): Promise<{session: number}> {
   return lockConnection(() => {
-    return Promise.resolve().then(() => {
+    return Promise.resolve().then((): Promise<string | number> => {
       const parsedInput = parseAcquireInput(input);
       const id = parsedInput.id;
 
@@ -101,17 +119,25 @@ export function acquire(input: any): Promise<{session: number}> {
       // if I am already connected (in a different tab for example),
       // disconnect that one
       if (realPrevious != null) {
-        return _realRelease(realPrevious).then(() => id);
+        const releasePromise: Promise = _realRelease(realPrevious);
+        const res: Promise<string|number> = releasePromise.then(() => id);
+        return res;
       } else {
         return Promise.resolve(id);
       }
-    }).then((id) =>
-      hid.connect(id).then((connectionId) => {
-        return {connectionId, id};
-      })
-    ).then((o) => {
-      const connectionId: number = o.connectionId;
-      const id: number = o.id;
+    }).then((id: (string|number)): Promise<{connectionId: string | number, id: string | number}> => {
+      if (typeof id === "string") {
+        const port = parseInt(id.slice(3));
+        const address = "127.0.0.1";
+        return udp.connect(address, port).then((socketId) => {
+          return {connectionId: "udp" + socketId, id};
+        });
+      } else {
+        return hid.connect(id).then((connectionId) => {
+          return {connectionId, id};
+        });
+      }
+    }).then(({connectionId, id}) => {
       connectionsMap[id.toString()] = connectionId;
       reverse[connectionId.toString()] = id;
 
@@ -127,13 +153,19 @@ export function acquire(input: any): Promise<{session: number}> {
 
 const onRelease: {[connectionId: string]: Array<() => void>} = {};
 
-function _realRelease(connectionId: number): Promise<string> {
-  return hid.disconnect(connectionId).then(() => {
+function _realRelease(connectionId: number | string): Promise<string> {
+  const isUdp: boolean = connectionId.toString().startsWith("udp");
+
+  const disconnect = isUdp
+    ? udp.disconnect(parseInt(connectionId.toString().slice(3)))
+    : hid.disconnect(parseInt(connectionId));
+
+  return disconnect.then(() => {
     return releaseCleanup(connectionId);
   });
 }
 
-function releaseCleanup(connectionId: number): string {
+function releaseCleanup(connectionId: number|string): string {
   const connectionIdStr: string = connectionId.toString();
   const deviceIdStr = reverse[connectionIdStr].toString();
   delete reverse[connectionIdStr];
@@ -145,10 +177,10 @@ function releaseCleanup(connectionId: number): string {
   return "Success";
 }
 
-export function releaseDisconnected(devices: Array<ChromeHidDeviceInfo>) {
+export function releaseDisconnected(devices: Array<TrezorDeviceInfo>) {
   const connected = {};
   devices.forEach(device => {
-    connected[device.deviceId.toString()] = true;
+    connected[device.path.toString()] = true;
   });
   Object.keys(connectionsMap).forEach((deviceId: string) => {
     if (connected[deviceId] == null) {
@@ -159,7 +191,7 @@ export function releaseDisconnected(devices: Array<ChromeHidDeviceInfo>) {
   });
 }
 
-export function doOnRelease(connectionId: number, fun: () => void) {
+export function doOnRelease(connectionId: number|string, fun: () => void) {
   const id = connectionId.toString();
   if (onRelease[id] == null) {
     onRelease[id] = [];
@@ -167,7 +199,7 @@ export function doOnRelease(connectionId: number, fun: () => void) {
   onRelease[id].push(fun);
 }
 
-export function release(connectionId: number): Promise<string> {
+export function release(connectionId: number|string): Promise<string> {
   const id = parseInt(connectionId);
   if (isNaN(id)) {
     throw new Error("Wrong release input");
@@ -176,7 +208,7 @@ export function release(connectionId: number): Promise<string> {
   return lockConnection(() => _realRelease(id));
 }
 
-export function getSession(deviceId: number): ?number {
+export function getSession(deviceId: number | string): ?(number|string) {
   return connectionsMap[deviceId.toString()];
 }
 

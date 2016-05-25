@@ -28,19 +28,24 @@
 // Logic of "call" is broken to two parts - sending and recieving
 
 import * as hid from "../chrome/hid";
+import * as udp from "../chrome/udp";
 import * as constants from "../constants.js";
 import * as connections from "./connections";
 import * as ProtoBuf from "protobufjs";
 import {ByteBuffer} from "protobufjs";
 import type {Messages} from "../protobuf/messages.js";
 
-// Sends more buffers to device.
-function sendBuffers(id: number, buffers: Array<ArrayBuffer>): Promise<void> {
+function sendLogic(id: number|string, data: ArrayBuffer): Promise {
+  const isUdp = id.toString().startsWith("udp");
   const hasReportId: boolean = connections.hasReportId(id);
+  return isUdp ? udp.send(parseInt(id.toString().slice(3)), data) : hid.send(parseInt(id), data, hasReportId);
+}
 
+// Sends more buffers to device.
+function sendBuffers(id: number|string, buffers: Array<ArrayBuffer>): Promise<void> {
   return buffers.reduce((prevPromise: Promise<void>, buffer: ArrayBuffer) => {
     return prevPromise.then(() => {
-      return hid.send(id, buffer, hasReportId);
+      return sendLogic(id, buffer);
     });
   }, Promise.resolve(undefined));
 }
@@ -160,7 +165,7 @@ function buildBuffers(messages: Messages, name: string, data: Object): Array<Arr
 
 // Sends message to device.
 // Resolves iff everything gets sent
-export function send(messages: Messages, id: number, name: string, data: Object): Promise<void> {
+export function send(messages: Messages, id: number|string, name: string, data: Object): Promise<void> {
   const buffers: Array<ArrayBuffer> = buildBuffers(messages, name, data);
   return sendBuffers(id, buffers);
 }

@@ -24,6 +24,7 @@
 "use strict";
 
 import * as constants from "../constants.js";
+import * as slice from "./slice";
 
 // Enumerates trezors.
 export function enumerate(): Promise<Array<ChromeHidDeviceInfo>> {
@@ -52,13 +53,8 @@ export function send(id: number, data: ArrayBuffer, hasReportId: boolean): Promi
     Promise.reject("No ID to hid.send");
   }
   const reportId = hasReportId ? constants.REPORT_ID : 0;
-  let sendData: ArrayBuffer = data;
-  if (!hasReportId) {
-    const newArray: Uint8Array = new Uint8Array(64);
-    newArray[0] = 63;
-    newArray.set(new Uint8Array(data), 1);
-    sendData = newArray.buffer;
-  }
+  const sendData: ArrayBuffer = slice.maybeAdd(data, !hasReportId);
+
   return new Promise((resolve, reject) => {
     try {
       chrome.hid.send(id, reportId, sendData, () => {
@@ -87,21 +83,7 @@ export function receive(id: number): Promise<ArrayBuffer> {
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError);
         } else {
-          if (reportId === 0) {
-            const dataView: Uint8Array = new Uint8Array(data);
-
-            if (dataView[0] !== 63) {
-              reject("Invalid data");
-            } else {
-              resolve(data.slice(1));
-            }
-          } else {
-            if (reportId === 63) {
-              resolve(data);
-            } else {
-              reject("Invalid data");
-            }
-          }
+          slice.maybeSlice(data, reportId === 0, resolve, reject);
         }
       });
     } catch (e) {
