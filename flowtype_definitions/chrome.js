@@ -4,6 +4,46 @@ declare class Chrome {
   storage: ChromeStorage;
   app: ChromeApp;
   browser: ChromeBrowser;
+  sockets: ChromeSockets;
+}
+
+declare class ChromeSockets {
+  udp: ChromeUdp;
+}
+
+declare type ChromeUdpProperties = {
+  persistent?: boolean;
+  name?: string;
+  bufferSize?: number;
+}
+
+declare type ChromeUdpCreateInfo = {
+  socketId: number;
+}
+
+declare type ChromeUdpSendInfo = {
+  resultCode: number;
+  bytesSent?: number;
+}
+
+declare class ChromeOnReceive {
+  addListener: (callback: (info: ChromeUdpReceiveInfo) => void) => void;
+}
+
+declare type ChromeUdpReceiveInfo = {
+  socketId: number;
+  data: ArrayBuffer;
+  remoteAddress: string;
+  remotePort: number;
+}
+
+declare class ChromeUdp {
+  create: (properties: ChromeUdpProperties, callback: (info: ChromeUdpCreateInfo) => void) => void;
+  bind: (socketId: number, address: string, port: number, callback: (result: number) => void) => void;
+  send: (socketId: number, data: ArrayBuffer, address: string, port: number,
+    callback: (info: ChromeUdpSendInfo) => void
+  ) => void;
+  onReceive: ChromeOnReceive;
 }
 
 declare class ChromeHidDeviceInfo {
