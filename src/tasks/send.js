@@ -113,7 +113,8 @@ class BuiltMessage {
     for (let i = 0; i < count; i++) {
       const slice: Uint8Array = bytes.subarray(i * size, (i + 1) * size);
       const newArray: Uint8Array = new Uint8Array(size);
-      newArray.set(slice);
+      newArray[0] = 63;
+      newArray.set(slice, 1);
       result.push(newArray.buffer);
     }
 

@@ -53,7 +53,7 @@ export function send(id: number, data: ArrayBuffer): Promise<void> {
   }
   return new Promise((resolve, reject) => {
     try {
-      chrome.hid.send(id, constants.REPORT_ID, data, () => {
+      chrome.hid.send(id, 0, data, () => {
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError);
         } else {
@@ -79,7 +79,18 @@ export function receive(id: number): Promise<ArrayBuffer> {
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError);
         } else {
-          resolve(data);
+          if (reportId == 0) {
+            if (data[0] != 63) {
+              reject("Invalid data");
+            } else {
+              resolve(data.slice(1));
+            }
+          } else
+          if (reportId == 63) {
+            resolve(data);
+          } else {
+            reject("Invalid data");
+          }
         }
       });
     } catch (e) {

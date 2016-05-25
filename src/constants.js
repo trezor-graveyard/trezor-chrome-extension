@@ -31,7 +31,6 @@ export const TREZOR_DESC: ChromeHidGetDevicesOptions = {
 export const HEADER_SIZE: number = 1 + 1 + 4 + 2; // should be 8 :-)
 export const MESSAGE_HEADER_BYTE: number = 0x23;
 export const BUFFER_SIZE: number = 63;
-export const REPORT_ID: number = 63;
 
 export const LISTEN_ITERS: number = 60;
 export const LISTEN_DELAY: number = 500;
