@@ -29,15 +29,18 @@
 
 import * as hid from "../chrome/hid";
 import * as constants from "../constants.js";
+import * as connections from "./connections";
 import * as ProtoBuf from "protobufjs";
 import {ByteBuffer} from "protobufjs";
 import type {Messages} from "../protobuf/messages.js";
 
 // Sends more buffers to device.
 function sendBuffers(id: number, buffers: Array<ArrayBuffer>): Promise<void> {
+  const hasReportId: boolean = connections.hasReportId(id);
+
   return buffers.reduce((prevPromise: Promise<void>, buffer: ArrayBuffer) => {
     return prevPromise.then(() => {
-      return hid.send(id, buffer);
+      return hid.send(id, buffer, hasReportId);
     });
   }, Promise.resolve(undefined));
 }
@@ -113,8 +116,7 @@ class BuiltMessage {
     for (let i = 0; i < count; i++) {
       const slice: Uint8Array = bytes.subarray(i * size, (i + 1) * size);
       const newArray: Uint8Array = new Uint8Array(size);
-      newArray[0] = 63;
-      newArray.set(slice, 1);
+      newArray.set(slice);
       result.push(newArray.buffer);
     }
 

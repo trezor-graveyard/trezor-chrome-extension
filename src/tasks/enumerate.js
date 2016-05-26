@@ -61,6 +61,7 @@ function devicesToJSON(devices: Array<ChromeHidDeviceInfo>): Array<TrezorDeviceI
 export function enumerate(): Promise<Array<TrezorDeviceInfo>> {
   return connections.lockConnection(() => {
     return hid.enumerate().then((devices: Array<ChromeHidDeviceInfo>): Array<TrezorDeviceInfo> => {
+      connections.setReportIds(devices);
       connections.releaseDisconnected(devices);
       return devicesToJSON(devices);
     });

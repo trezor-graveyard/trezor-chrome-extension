@@ -29,6 +29,21 @@ import {catchUdevError} from "./udevStatus";
 const connectionsMap: {[keys: string]: number} = {};
 const reverse: {[keys: string]: number} = {};
 
+// deviceId => boolean
+const _hasReportId: {[keys: string]: boolean} = {};
+
+export function setReportIds(devices: Array<ChromeHidDeviceInfo>) {
+  devices.forEach(device => {
+    _hasReportId[device.deviceId.toString()] = device.collections[0].reportIds.length !== 0;
+  });
+}
+
+// session ID => boolean
+export function hasReportId(connectionId: number): boolean {
+  const deviceId: number = reverse[connectionId.toString()];
+  return _hasReportId[deviceId.toString()];
+}
+
 function parseAcquireInput(input: any): {
   id: number,
   previous: ?number,
