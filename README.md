@@ -74,6 +74,18 @@ If you don't want to or can't install that, please refer to our documentation
 
 http://doc.satoshilabs.com/trezor-user/settingupchromeonlinux.html
 
+## UDP connection
+
+Connect to UDP TREZOR emulator (will be released soon-ish) by opening extension background page in chrome://extensions and typing into console
+
+`window.setUdp([21324, ...])`
+
+with the list of ports of the virtual devices. The devices are immediately added and are registered as connected; if an app (like myTREZOR) is running, it will see them and try to communicate with them. To simulate disconnect, just type
+
+`window.setUdp([])`
+
+and the device are marked as disconnected.
+
 ## API
 
 If installed using some of the described methods, the extension has an id `jcjjhjgimijdkoamemaghajlhegmoclj`. 
