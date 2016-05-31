@@ -202,10 +202,12 @@ export function doOnRelease(connectionId: number|string, fun: () => void) {
 export function release(connectionId: number|string): Promise<string> {
   const id = parseInt(connectionId);
   if (isNaN(id)) {
-    throw new Error("Wrong release input");
+    if (!(connectionId.toString().startsWith("udp"))) {
+      throw new Error("Wrong release input");
+    }
   }
 
-  return lockConnection(() => _realRelease(id));
+  return lockConnection(() => _realRelease(connectionId));
 }
 
 export function getSession(deviceId: number | string): ?(number|string) {
