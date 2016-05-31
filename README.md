@@ -86,6 +86,8 @@ with the list of ports of the virtual devices. The devices are immediately added
 
 and the device are marked as disconnected.
 
+Allowed ports are 21324, 21325 and 21326.
+
 ## API
 
 If installed using some of the described methods, the extension has an id `jcjjhjgimijdkoamemaghajlhegmoclj`. 

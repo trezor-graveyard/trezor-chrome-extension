@@ -56,7 +56,7 @@ export function connect(address: string, port: number): Promise<number> {
           reject(chrome.runtime.lastError);
         } else {
           try {
-            chrome.sockets.udp.bind(socketId, "127.0.0.1", 0, (result: number) => {
+            chrome.sockets.udp.bind(socketId, "127.0.0.1", port + 3, (result: number) => {
               if (chrome.runtime.lastError) {
                 reject(chrome.runtime.lastError);
               } else {
