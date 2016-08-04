@@ -61,6 +61,8 @@ make zip
 
 The source code of the transport layer is using [flow](http://flowtype.org) type annotations and some features of ECMAScript 6.
 
+Most of the logic is now in trezor-link npm package, the extension just do data validation and so on.
+
 The source code of the device management is an angular app. If it seems a little "over-blown", it's because it was created as a clone of the whole myTREZOR app, which handles more than device management, and then functionality was stripped off. 
 
 
