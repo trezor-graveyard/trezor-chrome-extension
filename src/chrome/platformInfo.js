@@ -20,27 +20,6 @@
 
 "use strict";
 
-// encapsulating chrome's platform info into Promise API
-export function platformInfo(): Promise<ChromePlatformInfo> {
-  return new Promise((resolve, reject) => {
-    try {
-      chrome.runtime.getPlatformInfo((info: ChromePlatformInfo) => {
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
-        } else {
-          if (info == null) {
-            reject(new Error("info is null"));
-          } else {
-            resolve(info);
-          }
-        }
-      });
-    } catch (e) {
-      reject(e);
-    }
-  });
-}
-
 export function manifest(): Promise<Object> {
   return new Promise((resolve, reject) => {
     try {
