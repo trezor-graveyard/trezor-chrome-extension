@@ -1,103 +1,197 @@
 /* @flow */
-/**
- * This file is part of the TREZOR project.
- *
- * Copyright (C) 2015 SatoshiLabs <info@satoshilabs.com>
- *           (C) 2014 Mike Tsao <mike@sowbug.com>
- *           (C) 2014 Liz Fong-Jones <lizf@google.com>
- *           (C) 2015 William Wolf <throughnothing@gmail.com>
- *
- * This library is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this library.  If not, see <http://www.gnu.org/licenses/>.
- */
 
 "use strict";
 
-import {patch} from "./protobuf/monkey_patch.js";
-patch();
+import Link from "trezor-link";
+import hidTransport from "trezor-link-chrome-hid";
+import UdpTransport from "trezor-link-chrome-udp";
 
-import {tasks} from "./tasks";
+import type {AcquireInput, TrezorDeviceInfoWithSession as LinkDevice} from "trezor-link";
+
 import * as storage from "./chrome/storage";
-import type {Messages} from "./protobuf/messages";
-import {setUdp} from "./tasks/connections";
+import {manifest} from "./chrome/platformInfo";
 
-type MessageToTrezor = {id: ?(number|string), type: ?string, message: Object};
 type MessageFromTrezor = {type: string, message: Object};
 type StatusInfo = {version: string, configured: boolean}
 
-// description of messages, loaded by configure
-// if null -> either not configured yet, or background page killed/restarted
-let messages: ?Messages = null;
+type TrezorDeviceInfo = {
+  path: string;
+  vendor: number;
+  product: number;
+  serialNumber: number; // always 0
+  session: ?string; // might be null/undefined
+}
+
+const TREZOR_VENDOR_ID: number = 0x534c;
+const TREZOR_PRODUCT_ID: number = 0x0001;
+
+const udpTransport = new UdpTransport(3);
+
+const link = new Link(Link.combineTransports({"hid": hidTransport, "udp": udpTransport}));
 
 // when we try to read messages and it's null, we look into storage
 // if it's not saved. If it is saved, we try to configure again
-function messagesReload(): Promise<Messages> {
-  if (messages == null) {
-    return storage.get("savedConfigure").then((body: string) => {
-      // note - if configure becomes old, this invalidates and fails
-      // but whenever we call "configure" this gets overwritten
-      return tasks.configure(body);
-    }, () => {
-      return Promise.reject(new Error("No protocol definition, call configure"));
-    }).then((_messages) => {
-      messages = _messages;
-      return _messages;
-    });
-  } else {
-    return Promise.resolve(messages);
+async function messagesReload(): Promise<void> {
+  const hasMessages = await link.hasMessages();
+  if (hasMessages) {
+    return;
+  }
+  let savedConfigure: string = "";
+  try {
+    savedConfigure = await storage.get("savedConfigure");
+  } catch (e) {
+    throw new Error("No protocol definition, call configure.");
+  }
+  await configure(savedConfigure);
+}
+
+async function ping() {
+  return "pong";
+}
+
+function convertDevices(devices: Array<LinkDevice>): Array<TrezorDeviceInfo> {
+  return devices.map(device => {
+    return {
+      ...device,
+      vendor: TREZOR_VENDOR_ID,
+      product: TREZOR_PRODUCT_ID,
+      serialNumber: 0,
+    };
+  });
+}
+
+async function enumerate(): Promise<Array<TrezorDeviceInfo>> {
+  return convertDevices(await link.enumerate());
+}
+
+async function listen(previous: mixed): Promise<Array<TrezorDeviceInfo>> {
+  let convertedPrevious: ?Array<LinkDevice> = null;
+  if (previous != null) {
+    if (typeof previous === "object") {
+      if (previous instanceof Array) {
+        convertedPrevious = previous.map((d: mixed): LinkDevice => {
+          if (typeof d !== "object" || d == null) {
+            throw new Error("Device is not an object");
+          }
+          if (typeof d.path !== "string") {
+            throw new Error("Device path is strange");
+          }
+          const path: string = d.path;
+          let session: ?string = null;
+          if (d.session != null) {
+            if (typeof d.session !== "string") {
+              throw new Error("Device session is strange");
+            }
+            session = d.session;
+          }
+          const r: LinkDevice = {path, session};
+          return r;
+        });
+      }
+    }
+  }
+  return convertDevices(await link.listen(convertedPrevious));
+}
+
+async function acquire(input: mixed): Promise<{session: string}> {
+  let acquireInput: AcquireInput = "";
+  if (typeof input === "string") {
+    acquireInput = input;
+  } else if (typeof input === "object" && input != null) {
+    if (typeof input.path !== "string") {
+      throw new Error("Device path is strange.");
+    }
+    const path: string = input.path;
+    let previous: ?string = null;
+    if (input.previous != null) {
+      if (typeof input.previous !== "string") {
+        throw new Error("Device session is strange.");
+      }
+      previous = input.previous;
+    }
+    acquireInput = {path, previous};
+  }
+  const session = await link.acquire(acquireInput);
+  return {session};
+}
+
+async function release(input: mixed): Promise<string> {
+  if (typeof input !== "string") {
+    throw new Error("Device session is strange.");
+  }
+  await link.release(input);
+  return "Success";
+}
+
+async function udevStatus(): Promise<string> {
+  const hasError: boolean = await hidTransport.showUdevError();
+  return hasError ? "display" : "hide";
+}
+
+async function call(input: mixed): Promise<MessageFromTrezor> {
+  if (typeof input !== "object" || input == null) {
+    throw new Error("Input is not an object");
+  }
+  if (typeof input.id !== "string") {
+    throw new Error("Session is strange.");
+  }
+  if (typeof input.type !== "string") {
+    throw new Error("Type is not a string.");
+  }
+  if (typeof input.message !== "object" || input.message == null) {
+    throw new Error("Message is not an object.");
+  }
+  const id: string = input.id;
+  const type: string = input.type;
+  const message: Object = input.message;
+  await messagesReload();
+  return await link.call(id, type, message);
+}
+
+async function configure(input: mixed): Promise<string> {
+  if (typeof input !== "string") {
+    throw new Error("Configure input is strange.");
+  }
+  const body: string = input;
+  await storage.set(body);
+  await link.configure(body);
+  return "Success";
+}
+
+async function _version(): Promise<string> {
+  const version = (await manifest()).version;
+  if (version == null) {
+    throw new Error("Manifest doesn't have a version!");
+  }
+  return version;
+}
+
+async function _configured(): Promise<boolean> {
+  try {
+    await messagesReload();
+    return true;
+  } catch (e) {
+    return false;
   }
 }
 
+async function info(): Promise<StatusInfo> {
+  return {
+    version: await _version(),
+    configured: await _configured(),
+  };
+}
+
 const responseFunctions = {
-  ping: tasks.ping,
-  enumerate: tasks.enumerate,
-  listen: tasks.listen,
-  acquire: tasks.acquire,
-  release: tasks.release,
-  udevStatus: tasks.udevStatus,
-
-  call: (body: MessageToTrezor): Promise<MessageFromTrezor> => {
-    return messagesReload().then((messages: Messages) => {
-      return tasks.call(body, messages);
-    });
-  },
-
-  configure: (body: string): Promise<string> => {
-    return storage.set("savedConfigure", body).then(() => {
-      return tasks.configure(body);
-    }).then((loadedMessages: Messages): void => {
-      messages = loadedMessages;
-    }).then((): string => {
-      return "Success";
-    });
-  },
-
-  info: (): Promise<StatusInfo> => {
-    const hasMessagesP: Promise<boolean> = messagesReload().then(() => {
-      return true;
-    }, () => {
-      return false;
-    });
-
-    return hasMessagesP.then((hasMessages: boolean) => {
-      return tasks.version().then((version: string): StatusInfo => {
-        return {
-          version: version,
-          configured: hasMessages,
-        };
-      });
-    });
-  },
+  ping,
+  enumerate,
+  listen,
+  acquire,
+  release,
+  udevStatus,
+  call,
+  configure,
+  info,
 };
 
 function handleMessage(request: Object, sender: ChromeMessageSender, sendResponse: (response: Object) => void): boolean {
@@ -107,7 +201,9 @@ function handleMessage(request: Object, sender: ChromeMessageSender, sendRespons
 
   const responseFunction = (responseFunctions[request.type])
     ? responseFunctions[request.type]
-    : tasks.none;
+    : () => {
+      throw new Error("No function defined for " + request.type);
+    };
 
   const nonThrowingResponse = (body) => {
     try {
@@ -142,44 +238,35 @@ function handleMessage(request: Object, sender: ChromeMessageSender, sendRespons
   return true;
 }
 
+chrome.runtime.onMessage.addListener(handleMessage);
+chrome.runtime.onMessageExternal.addListener(handleMessage);
+let windowOpen: boolean = false;
+
+chrome.app.runtime.onLaunched.addListener(() => {
+  if (!windowOpen) {
+    chrome.app.window.create("management/index.html", {
+      "innerBounds": {
+        "width": 774,
+        "height": 774,
+      },
+    }, (newWindow) => {
+      windowOpen = true;
+      newWindow.onClosed.addListener(() => {
+        windowOpen = false;
+      });
+    });
+  }
+});
+
 storage.get("udp").then((udpSerialized) => {
   const udpStorage = JSON.parse(udpSerialized);
   if (udpStorage instanceof Array) {
-    setUdp(udpStorage);
+    udpTransport.setPorts(udpStorage);
   }
-
-  chrome.runtime.onMessage.addListener(handleMessage);
-  chrome.runtime.onMessageExternal.addListener(handleMessage);
-
-  storage.get("afterInstall").then((afterInstall) => {
-    if (afterInstall === null) {
-      return storage.set("afterInstall", true);
-    }
-  }).catch((e) => {
-    console.error(e);
-  });
-
-  let windowOpen : boolean = false;
-
-  chrome.app.runtime.onLaunched.addListener(() => {
-    if (!windowOpen) {
-      chrome.app.window.create("management/index.html", {
-        "innerBounds": {
-          "width": 774,
-          "height": 774,
-        },
-      }, (newWindow) => {
-        windowOpen = true;
-        newWindow.onClosed.addListener(() => {
-          windowOpen = false;
-        });
-      });
-    }
-  });
 });
 
 window.setUdp = function (ports: Array<number>) {
   storage.set("udp", JSON.stringify(ports));
-  setUdp(ports);
+  udpTransport.setPorts(ports);
   console.log("Ports added", ports);
 };

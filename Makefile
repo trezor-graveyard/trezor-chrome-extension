@@ -1,6 +1,6 @@
 all: clear zip
 
-flow: src/config_proto_compiled.js
+flow: 
 	cd src; flow check
 
 eslint:
@@ -21,16 +21,13 @@ zip: dist
 dist: pre-browserify dist-build
 
 dist-build:
-	NODE_ENV=dist `npm bin`/browserify src/index.js | `npm bin`/uglifyjs -c > extension/index.js
+	NODE_ENV=dist `npm bin`/browserify src/index.js  > extension/index.js
 
 debug: pre-browserify-debug
-	NODE_ENV=debug `npm bin`/browserify src/index.js -d -o extension/index.js
+	NODE_ENV=debug `npm bin`/browserify src/index.js -o extension/index.js
 
-pre-browserify: check-modules src/config_proto_compiled.js management_make manifest
-pre-browserify-debug: check-modules src/config_proto_compiled.js manifest
-
-src/config_proto_compiled.js:
-	./compile_protobuf.sh
+pre-browserify: check-modules management_make manifest
+pre-browserify-debug: check-modules manifest
 
 management_make:
 	$(MAKE) -C management
