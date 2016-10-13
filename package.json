@@ -33,9 +33,7 @@
     "url": "git://github.com/trezor/trezor-chrome-extension.git"
   },
   "dependencies": {
-    "trezor-link": "^0.1.13",
-    "trezor-link-chrome-hid": "^0.1.6",
-    "trezor-link-chrome-udp": "^0.1.3"
+    "trezor-link-browser-extension": "^0.2.46"
   },
   "devDependencies": {
     "babel-plugin-add-module-exports": "^0.1.2",
@@ -44,7 +42,7 @@
     "babel-plugin-transform-object-rest-spread": "^6.8.0",
     "babel-preset-chrome-49": "^1.0.0",
     "babelify": "^7.2.0",
-    "browserify": "^13.0.0",
+    "browserify": "^13.1.0",
     "envify": "^3.4.0",
     "fast-async": "^6.0.31"
   },

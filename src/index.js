@@ -2,12 +2,9 @@
 
 "use strict";
 
-import Link from "trezor-link";
-import hidTransport from "trezor-link-chrome-hid";
-import UdpTransport from "trezor-link-chrome-udp";
+import type {AcquireInput, TrezorDeviceInfoWithSession as LinkDevice} from "trezor-link-browser-extension";
 
-import type {AcquireInput, TrezorDeviceInfoWithSession as LinkDevice} from "trezor-link";
-
+import Link from "trezor-link-browser-extension";
 import * as storage from "./chrome/storage";
 import {manifest} from "./chrome/platformInfo";
 
@@ -25,14 +22,33 @@ type TrezorDeviceInfo = {
 const TREZOR_VENDOR_ID: number = 0x534c;
 const TREZOR_PRODUCT_ID: number = 0x0001;
 
-const udpTransport = new UdpTransport(3);
+const ParallelTransport = Link.Parallel;
+const LowlevelTransport = Link.Lowlevel;
+const ChromeHidPlugin = Link.ChromeHid;
+const ChromeUdpPlugin = Link.ChromeUdp;
+// const FallbackTransport = Link.Fallback;
+// const BridgeTransport = Link.Bridge;
+/* const link = new FallbackTransport(
+  [
+      new BridgeTransport(),
+      new LowlevelTransport(new ChromeHidPlugin()),
+  ]
+);*/
 
-const link = new Link(Link.combineTransports({"hid": hidTransport, "udp": udpTransport}));
+const udpPlugin = new ChromeUdpPlugin();
+const link = new ParallelTransport(
+  {
+    "udp": new LowlevelTransport(udpPlugin),
+    "hid": new LowlevelTransport(new ChromeHidPlugin()),
+  }
+);
+
+link.init(process.env.NODE_ENV === "debug").catch((err) => console.error("Cannot init", err));
 
 // when we try to read messages and it's null, we look into storage
 // if it's not saved. If it is saved, we try to configure again
 async function messagesReload(): Promise<void> {
-  const hasMessages = await link.hasMessages();
+  const hasMessages = link.configured;
   if (hasMessages) {
     return;
   }
@@ -73,16 +89,16 @@ async function listen(previous: mixed): Promise<Array<TrezorDeviceInfo>> {
           if (typeof d !== "object" || d == null) {
             throw new Error("Device is not an object");
           }
-          if (typeof d.path !== "string") {
+          if (typeof d.path !== "string" && typeof d.path !== "number") {
             throw new Error("Device path is strange");
           }
-          const path: string = d.path;
+          const path: string = d.path.toString();
           let session: ?string = null;
           if (d.session != null) {
-            if (typeof d.session !== "string") {
+            if (typeof d.session !== "string" && typeof d.session !== "number") {
               throw new Error("Device session is strange");
             }
-            session = d.session;
+            session = d.session.toString();
           }
           const r: LinkDevice = {path, session};
           return r;
@@ -93,57 +109,62 @@ async function listen(previous: mixed): Promise<Array<TrezorDeviceInfo>> {
   return convertDevices(await link.listen(convertedPrevious));
 }
 
-async function acquire(input: mixed): Promise<{session: string}> {
-  let acquireInput: AcquireInput = "";
+function parseAcquireInput(input: mixed): AcquireInput {
   if (typeof input === "string") {
-    acquireInput = input;
+    return {path: input, previous: null, checkPrevious: false};
   } else if (typeof input === "object" && input != null) {
-    if (typeof input.path !== "string") {
+    if (typeof input.path !== "string" && typeof input.path !== "number") {
       throw new Error("Device path is strange.");
     }
-    const path: string = input.path;
+    const path: string = input.path.toString();
     let previous: ?string = null;
     if (input.previous != null) {
-      if (typeof input.previous !== "string") {
+      if (typeof input.previous !== "string" && typeof input.previous !== "number") {
         throw new Error("Device session is strange.");
       }
-      previous = input.previous;
+      previous = input.previous.toString();
     }
-    acquireInput = {path, previous};
+
+    return {path, previous, checkPrevious: true};
   }
-  const session = await link.acquire(acquireInput);
+  throw new Error("Acquire input is strange.");
+}
+
+async function acquire(input: mixed): Promise<{session: string}> {
+  const session = await link.acquire(parseAcquireInput(input));
   return {session};
 }
 
 async function release(input: mixed): Promise<string> {
-  if (typeof input !== "string") {
+  if (typeof input !== "string" && typeof input !== "number") {
     throw new Error("Device session is strange.");
   }
-  await link.release(input);
+  await link.release(input.toString());
   return "Success";
 }
 
 async function udevStatus(): Promise<string> {
-  const hasError: boolean = await hidTransport.showUdevError();
-  return hasError ? "display" : "hide";
+  // const hasError: boolean = await hidTransport.showUdevError();
+  // return hasError ? "display" : "hide";
+  return "hide";
 }
 
 async function call(input: mixed): Promise<MessageFromTrezor> {
   if (typeof input !== "object" || input == null) {
     throw new Error("Input is not an object");
   }
-  if (typeof input.id !== "string") {
+  if (typeof input.id !== "string" && typeof input.id !== "number") {
     throw new Error("Session is strange.");
   }
   if (typeof input.type !== "string") {
     throw new Error("Type is not a string.");
   }
+  const type: string = input.type;
   if (typeof input.message !== "object" || input.message == null) {
     throw new Error("Message is not an object.");
   }
-  const id: string = input.id;
-  const type: string = input.type;
   const message: Object = input.message;
+  const id: string = input.id.toString();
   await messagesReload();
   return await link.call(id, type, message);
 }
@@ -269,12 +290,12 @@ chrome.app.runtime.onLaunched.addListener(() => {
 storage.get("udp").then((udpSerialized) => {
   const udpStorage = JSON.parse(udpSerialized);
   if (udpStorage instanceof Array) {
-    udpTransport.setPorts(udpStorage);
+    udpPlugin.setPorts(udpStorage);
   }
 });
 
 window.setUdp = function (ports: Array<number>) {
   storage.set("udp", JSON.stringify(ports));
-  udpTransport.setPorts(ports);
+  udpPlugin.setPorts(ports);
   console.log("Ports added", ports);
 };
