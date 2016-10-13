@@ -36,7 +36,7 @@ manifest:
 	python3 build_manifest.py
 
 npm-install:
-	npm install
+	yarn
 
 check-modules:
 	git submodule foreach git pull origin master
