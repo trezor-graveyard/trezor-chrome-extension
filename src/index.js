@@ -215,7 +215,7 @@ const responseFunctions = {
   info,
 };
 
-let setUdp = function (ports: Array<number>) {
+const setUdp = function (ports: Array<number>) {
   storage.set("udp", JSON.stringify(ports));
   udpPlugin.setPorts(ports);
   console.log("Ports added", ports);
