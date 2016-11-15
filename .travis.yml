@@ -13,7 +13,7 @@ node_js:
   - "4.4"
 
 before_script:
-  - npm install -g flow-bin eslint eslint-plugin-flow-vars babel-eslint@6.0.0-beta.6 eslint-plugin-standard eslint-plugin-promise
+  - npm install -g flow-bin eslint eslint-plugin-flowtype babel-eslint eslint-plugin-standard eslint-plugin-promise
   - sudo apt-get install python3
   
 env:
