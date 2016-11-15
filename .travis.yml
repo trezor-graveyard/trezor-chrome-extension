@@ -1,4 +1,4 @@
-sudo: false
+sudo: required
 language: node_js
 
 addons:
@@ -14,7 +14,8 @@ node_js:
 
 before_script:
   - npm install -g flow-bin eslint eslint-plugin-flow-vars babel-eslint@6.0.0-beta.6 eslint-plugin-standard eslint-plugin-promise
-
+  - sudo apt-get install python3
+  
 env:
   - CXX=g++-4.8 GOAL=zip
   - CXX=g++-4.8 GOAL=flow
