@@ -294,8 +294,10 @@ storage.get("udp").then((udpSerialized) => {
   }
 });
 
-window.setUdp = function (ports: Array<number>) {
+let setUdp = function (ports: Array<number>) {
   storage.set("udp", JSON.stringify(ports));
   udpPlugin.setPorts(ports);
   console.log("Ports added", ports);
 };
+
+window.setUdp = setUdp;
