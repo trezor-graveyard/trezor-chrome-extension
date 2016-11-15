@@ -215,6 +215,14 @@ const responseFunctions = {
   info,
 };
 
+let setUdp = function (ports: Array<number>) {
+  storage.set("udp", JSON.stringify(ports));
+  udpPlugin.setPorts(ports);
+  console.log("Ports added", ports);
+};
+
+window.setUdp = setUdp;
+
 const startingPromise = storage.get("udp").then((udpSerialized) => {
   const udpStorage = JSON.parse(udpSerialized);
   if (udpStorage instanceof Array) {
@@ -293,11 +301,3 @@ storage.get("udp").then((udpSerialized) => {
     udpPlugin.setPorts(udpStorage);
   }
 });
-
-let setUdp = function (ports: Array<number>) {
-  storage.set("udp", JSON.stringify(ports));
-  udpPlugin.setPorts(ports);
-  console.log("Ports added", ports);
-};
-
-window.setUdp = setUdp;
