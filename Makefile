@@ -1,7 +1,10 @@
 all: clear zip
 
-flow-check:
+flow: 
 	cd src; flow check
+
+eslint:
+	cd src; eslint .
 
 clear: 
 	rm -f extension.zip
@@ -15,40 +18,25 @@ clear:
 zip: dist
 	zip -r extension extension
 
-zip-beta: dist-beta
-	zip -r extension extension
-
 dist: pre-browserify dist-build
 
-dist-beta: pre-browserify-beta dist-build
-
 dist-build:
-	NODE_ENV=dist `npm bin`/browserify src/index.js -t babelify -t flow-typestrip -t envify | `npm bin`/uglifyjs -c > extension/index.js
+	NODE_ENV=dist `npm bin`/browserify src/index.js  > extension/index.js
 
-debug: pre-browserify
-	NODE_ENV=debug `npm bin`/browserify src/index.js -t babelify -t flow-typestrip -t envify -d -o extension/index.js
+debug: pre-browserify-debug
+	NODE_ENV=debug `npm bin`/browserify src/index.js -o extension/index.js
 
-pre-browserify: check-modules src/config_proto_compiled.js flow-check management_make manifest
-
-pre-browserify-beta: check-modules src/config_proto_compiled.js flow-check management_make-beta manifest-beta
-
-src/config_proto_compiled.js:
-	./compile_protobuf.sh
+pre-browserify: check-modules management_make manifest
+pre-browserify-debug: check-modules manifest
 
 management_make:
 	$(MAKE) -C management
 
-management_make-beta:
-	$(MAKE) -C management beta-all
-
 manifest:
-	python3 build_manifest.py	
-
-manifest-beta:
-	STORE_BETA=1 python3 build_manifest.py	
+	python3 build_manifest.py
 
 npm-install:
-	npm install
+	yarn
 
 check-modules:
 	git submodule foreach git pull origin master

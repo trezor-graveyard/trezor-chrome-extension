@@ -18,25 +18,17 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// Chrome's extension storage is actually more complicated
+// than LocalStorage, because it uses callbacks =>
+// I am converting them to (IMO) more manageable Promises
 
-/**
- * Chrome's extension storage is actually more complicated
- * than LocalStorage, because it uses callbacks =>
- * I am converting them to (IMO) more manageable Promises
- */
+"use strict";
 
-'use strict';
-
-
-/**
- * Get from storage
- * @param {String} key
- * @returns {Promise.<Object>} Thing from the storage, or null
- */
+// Get from storage
 export function get(key: string): Promise<any> {
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     try {
-      chrome.storage.local.get(key, function (items) {
+      chrome.storage.local.get(key, (items) => {
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError);
         } else {
@@ -47,24 +39,20 @@ export function get(key: string): Promise<any> {
           }
           resolve(items);
         }
-      })
+      });
     } catch (e) {
       reject(e);
     }
-  })
+  });
 }
 
-/**
- * Set to storage
- * @param {String} key
- * @param {Object} value Thing to save to the storage
- */
-module.exports.set = function (key:string, value:any): Promise<void> {
-  return new Promise(function (resolve, reject) {
+// Set to storage
+export function set(key:string, value:any): Promise<void> {
+  return new Promise((resolve, reject) => {
     try {
-      var obj: {} = {};
+      const obj: {} = {};
       obj[key] = value;
-      chrome.storage.local.set(obj, function () {
+      chrome.storage.local.set(obj, () => {
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError);
         } else {

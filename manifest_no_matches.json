@@ -1,9 +1,9 @@
 {
-  "name": "TREZOR Chrome extension",
-  "description": "Chrome extension for Bitcoin TREZOR",
-  "version": "0.2.8",
+  "name": "TREZOR Chrome Extension",
+  "description": "Chrome extension for TREZOR",
+  "version": "1.2.0",
   "author": "SatoshiLabs",
-  "short_name": "TREZOR extension",
+  "short_name": "TREZOR Extension",
 
   "manifest_version": 2,
   "minimum_chrome_version": "38.0.2125.7",
@@ -13,6 +13,12 @@
     "128": "icon128.png"
   },
 
+  "sockets": {
+    "udp": {
+      "bind": ["127.0.0.1:21327", "127.0.0.1:21328","127.0.0.1:21329"],
+      "send": ["127.0.0.1:21324", "127.0.0.1:21325","127.0.0.1:21326"]
+    }
+  },
   "app": {
     "background": {
       "scripts": ["index.js"]
@@ -26,8 +32,7 @@
         "productId": 1
       }]
     },
-    "storage",
-    "browser"
+    "storage"
   ],
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlBLI7C8hybngCmlKgfLytKQiqrTQYHQpz6E0DcWYeqC047J5hFtxbODYsPIn9sCJePv/LCW9jOc3G3B/aUGK1Lks+DrbnNlDgI/Ja4MzYEEaYyLFquHJlQe7B2doMTLS9JQfkWsXe/IQW8vfYq5Jo4JmiucXUbr37Xlsl0U/ScwSz0hDnzHQfpCpuLuUQP6kQrqbJ8Rd3NDlh5qAB0BfewDoDmlgGBlV+za80I8KYRSwgAvfEndevcsXQzV6myKptdqpffEbGhjwZ63ehofbnlr4c5i25OkMirI5bfcmP+6g/wYt4zOBnCep8MK8eG92NvocSBsu530XDywuCiY+2QIDAQAB"
 }

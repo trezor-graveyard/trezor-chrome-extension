@@ -1,0 +1,22 @@
+sudo: false
+language: node_js
+
+addons:
+  apt:
+    packages:
+      - python3 g++-4.8
+    sources:
+      - ubuntu-toolchain-r-test
+
+node_js:
+  - "4.4"
+
+before_script:
+  - npm install -g flow-bin eslint eslint-plugin-flow-vars babel-eslint@6.0.0-beta.6 eslint-plugin-standard eslint-plugin-promise
+
+env:
+  - CXX=g++-4.8 GOAL=zip
+  - CXX=g++-4.8 GOAL=flow
+  - CXX=g++-4.8 GOAL=eslint
+
+script: make $GOAL 

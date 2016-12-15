@@ -145,6 +145,8 @@ angular.module('webwalletApp').service('firmwareService', function FirmwareServi
     });
   }
 
+  this.check = check;
+
   this.download = function (firmware) {
     return $http.get(firmware.url).then(function (res) {
       if (!_validate(res.data)) {

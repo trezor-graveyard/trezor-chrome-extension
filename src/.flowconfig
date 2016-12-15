@@ -1,14 +1,22 @@
 [ignore]
+.*/node_modules/protobufjs/src/.*
+.*/node_modules/bitcoinjs-lib/.*
+.*/node_modules/bigi/.*
 
 [include]
+../node_modules/trezor-link-browser-extension/
+../node_modules/json-stable-stringify/*
 ../node_modules/protobufjs/*
-../node_modules/lodash/*
-../node_modules/bitcoinjs-lib/*
-../node_modules/bigi/*
-../node_modules/ecurve/*
-
+../node_modules/object.values/*
+../node_modules/semver-compare/*
 
 [libs]
 ../flowtype_definitions/chrome.js
+../node_modules/trezor-link-browser-extension/flowtype/bitcoinjs-lib.js
+../node_modules/trezor-link-browser-extension/flowtype/chrome.js
+../node_modules/trezor-link-browser-extension/flowtype/node-hid.js
 
 [options]
+suppress_comment=\\(.\\|\n\\)*\\$FlowIssue
+esproposal.class_instance_fields=enable
+esproposal.decorators=ignore
