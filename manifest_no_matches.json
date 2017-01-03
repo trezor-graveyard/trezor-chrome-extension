@@ -1,7 +1,7 @@
 {
   "name": "TREZOR Chrome Extension",
   "description": "Chrome extension for TREZOR",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "author": "SatoshiLabs",
   "short_name": "TREZOR Extension",
 
@@ -33,7 +33,12 @@
       "usbDevices": [{
         "vendorId": 21324,
         "productId": 1
-      }]
+      },
+      {
+        "vendorId": 21441,
+        "productId": 4617
+      }
+      ]
     },
     "storage"
   ],

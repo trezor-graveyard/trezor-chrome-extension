@@ -1498,9 +1498,9 @@ to-fast-properties@^1.0.1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/to-fast-properties/-/to-fast-properties-1.0.2.tgz#f3f5c0c3ba7299a7ef99427e44633257ade43320"
 
-trezor-link-browser-extension@^0.2.46:
-  version "0.2.46"
-  resolved "https://registry.yarnpkg.com/trezor-link-browser-extension/-/trezor-link-browser-extension-0.2.46.tgz#5106b8f483b25a64da510a8a2724ea718c52879a"
+trezor-link-browser-extension@^0.2.73:
+  version "0.2.73"
+  resolved "https://registry.yarnpkg.com/trezor-link-browser-extension/-/trezor-link-browser-extension-0.2.73.tgz#ffdc7ae0cd8a37a4fbc0da6a317f45951eee2ab0"
   dependencies:
     bigi "^1.4.1"
     bitcoinjs-lib "^2.2.0"
