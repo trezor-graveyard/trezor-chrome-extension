@@ -33,7 +33,7 @@
     "url": "git://github.com/trezor/trezor-chrome-extension.git"
   },
   "dependencies": {
-    "trezor-link-browser-extension": "^0.2.73"
+    "trezor-link-browser-extension": "0.2.85"
   },
   "devDependencies": {
     "babel-plugin-add-module-exports": "^0.1.2",
