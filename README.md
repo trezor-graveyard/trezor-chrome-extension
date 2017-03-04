@@ -10,7 +10,7 @@ TREZOR Chrome Extension has two different purposes.
 
 First, it has a built-in device management functionality, for wiping/recovery/initialization/.... It doesn't connect to any outside sources, all the data (including TREZOR firmware) is bundled with the app, so it works completely offline (if you somehow manage to install Chrome without an internet connection).
 
-Second, it's a transport layer between websites (such as our own webwallet [myTREZOR](https://mytrezor.com)) and TREZOR devices. It's possible to send Chrome messages (see [chrome messages API documentation](https://developer.chrome.com/extensions/messaging)) to the extension, and the extension resends it to TREZOR hardware and back.
+Second, it's a transport layer between websites (such as our own webwallet [TREZOR Wallet](https://wallet.trezor.io)) and TREZOR devices. It's possible to send Chrome messages (see [chrome messages API documentation](https://developer.chrome.com/extensions/messaging)) to the extension, and the extension resends it to TREZOR hardware and back.
 
 The messages are encoded through [protobuf.js](https://github.com/dcodeIO/ProtoBuf.js/) library and sent to the actual hardware via [Chrome USB HID API](https://developer.chrome.com/apps/hid).
 
@@ -18,7 +18,7 @@ The API of the extensions is described below. **For development of web apps for 
 
 ## Install via Web store
 
-Extension is available for download [at Google Web store](https://chrome.google.com/webstore/detail/jcjjhjgimijdkoamemaghajlhegmoclj) (and is automatically offered on [myTREZOR webwallet](https://www.mytrezor.com)).
+Extension is available for download [at Google Web store](https://chrome.google.com/webstore/detail/jcjjhjgimijdkoamemaghajlhegmoclj) (and is automatically offered on webwallet [TREZOR Wallet](https://wallet.trezor.io)).
 
 ## Install via ZIP
 
@@ -70,7 +70,7 @@ The source code of the device management is an angular app. If it seems a little
 
 On Mac OS X, Windows and Chrome OS, installing the extension should work without any root privileges. Unfortunately, on GNU/Linux, you have install so-called udev rules as a root.
 
-If you are using MyTrezor.com, we are trying to detect the errors and offer you an easy package for the two most popular packaging systems (DEB and RPM).
+If you are using wallet.trezor.io, we are trying to detect the errors and offer you an easy package for the two most popular packaging systems (DEB and RPM).
 
 If you don't want to or can't install that, please refer to our documentation
 
