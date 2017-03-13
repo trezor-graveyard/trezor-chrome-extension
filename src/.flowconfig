@@ -1,6 +1,6 @@
 [ignore]
 .*/node_modules/protobufjs/src/.*
-.*/node_modules/bitcoinjs-lib/.*
+.*/node_modules/bitcoinjs-lib-zcash/.*
 .*/node_modules/bigi/.*
 
 [include]
@@ -14,6 +14,7 @@
 ../flowtype_definitions/chrome.js
 ../node_modules/trezor-link-browser-extension/flowtype/bitcoinjs-lib.js
 ../node_modules/trezor-link-browser-extension/flowtype/chrome.js
+../node_modules/trezor-link-browser-extension/flowtype/webusb.js
 ../node_modules/trezor-link-browser-extension/flowtype/node-hid.js
 
 [options]
