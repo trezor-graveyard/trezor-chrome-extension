@@ -90,6 +90,8 @@ and the device are marked as disconnected.
 
 Allowed ports are 21324, 21325 and 21326.
 
+Note: there is a known bug - if you set up UDP connection, but turn off the emulator, the HID device listing might get stuck on webpage reloads. If you notice this, set `wuindow.setUdp([])` or turn on the emulator.
+
 ## API
 
 If installed using some of the described methods, the extension has an id `jcjjhjgimijdkoamemaghajlhegmoclj`. 
