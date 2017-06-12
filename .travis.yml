@@ -21,4 +21,12 @@ env:
   - CXX=g++-4.8 GOAL=flow
   - CXX=g++-4.8 GOAL=eslint
 
-script: make $GOAL 
+script: make $GOAL
+
+notifications:
+  webhooks:
+    urls:
+      - http://ci-bot.satoshilabs.com:5000/travis
+    on_success: always
+    on_failure: always
+    on_start: always
