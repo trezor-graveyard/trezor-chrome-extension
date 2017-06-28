@@ -1,25 +1,21 @@
-sudo: required
+dist: trusty
 language: node_js
 
 addons:
   apt:
     packages:
       - python3
-      - g++-4.8
-    sources:
-      - ubuntu-toolchain-r-test
 
 node_js:
   - "4.4"
 
 before_script:
   - npm install -g flow-bin eslint eslint-plugin-flowtype babel-eslint eslint-plugin-standard eslint-plugin-promise
-  - sudo apt-get install python3
-  
+
 env:
-  - CXX=g++-4.8 GOAL=zip
-  - CXX=g++-4.8 GOAL=flow
-  - CXX=g++-4.8 GOAL=eslint
+  - GOAL=zip
+  - GOAL=flow
+  - GOAL=eslint
 
 script: make $GOAL
 
