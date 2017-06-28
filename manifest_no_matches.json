@@ -35,8 +35,12 @@
         "productId": 1
       },
       {
-        "productId": 21441,
-        "vendorId": 4617
+        "vendorId": 4617,
+        "productId": 21441
+      },
+      {
+        "vendorId": 4617,
+        "productId": 21440
       }
       ]
     },
